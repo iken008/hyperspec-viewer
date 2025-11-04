@@ -1,74 +1,71 @@
-# Hyperspectral Viewer — Enhanced Edition
+# Hyperspectral Viewer
 
-A Python-based hyperspectral visualization and analysis tool.
+A desktop application for hyperspectral imaging data visualization and analysis.
 
-Originally inspired by the KLV tutorial viewer:
-https://www.klv.co.jp/corner/spectral-python-viewer.html
-The code has since been heavily extended into a standalone tool.
+## Features
 
-## ✨ Features (major enhancements)
+- Interactive visualization of grayscale and RGB hyperspectral images
+- Point and polygon-based spectral extraction
+- Spectral preprocessing (median filter, Savitzky-Golay, SNV)
+- Reflectance/Absorbance mode switching
+- Save/load project metadata as JSON
+- Export spectra to CSV
+- Keyboard shortcuts for efficient workflow
 
-- 📌 Pixel annotation & polygon selection
-- 📊 Polygon mean / std shading & CSV export
-- 🎚 Reflectance / Absorbance switching
-- 🧼 Spectral preprocessing
-  - Median denoise
-  - Savitzky–Golay smoothing
-  - SNV
-- 🗂 Multiple .hdr sources & JSON meta round-trip
-- 🚀 Fast band-limited processing & caching
-- 🎨 Stable 10-color cycle & overlap-aware import
-- ⌨️ Hotkeys for fast analysis
-- 🔁 State persistence & reproducible workflows
+## Requirements
 
-## 🖥 Requirements
+- Python 3.8+
+- numpy, scipy, matplotlib, spectral
 
-- Python 3.9+
-- Required libraries:
-  ```bash
-  pip install numpy scipy spectral matplotlib pillow
-  ```
+```bash
+pip install numpy scipy matplotlib spectral
+```
 
-## ▶️ Usage
+Note: tkinter is included with Python on Windows/macOS. On Linux: `sudo apt-get install python3-tk`
+
+## Usage
 
 ```bash
 python spectral_viewer.py
 ```
 
+### Quick Start
+
+1. Press `O` to open an HDR file
+2. Click on the image to extract point spectra
+3. Enable polygon mode with `I` to analyze regions
+4. Press `4` to save metadata, `5` to save images, `6` to export CSV
+
 ### Hotkeys
 
-| Key | Action                       |
-| --- | ---------------------------- |
-| r   | Reflectance mode             |
-| a   | Absorbance mode              |
-| i   | Point / Polygon input toggle |
-| 1   | Noise removal                |
-| 2   | Smoothing                    |
-| 3   | SNV                          |
-| d   | Clear all annotations        |
+| Key | Function |
+|-----|----------|
+| `O` | Open HDR file |
+| `L` | Load meta JSON |
+| `M` | Toggle Reflectance/Absorbance |
+| `1`/`2`/`3` | Toggle Denoise/Smoothing/SNV |
+| `4`/`5`/`6` | Save meta/images/CSV |
+| `I` | Toggle polygon mode |
+| `V` | Toggle all visibility |
+| `H` | Show/hide points list |
+| `A` | Switch Gray/RGB tabs |
 
-## 📁 Meta JSON Format
+## File Formats
 
-Stores:
+**Input**: ENVI format (`.hdr` + binary data)
 
-- Points / polygons
-- Labels
-- Source .hdr paths
-- Processing settings
-- Plot wavelength range
+**Output**: 
+- Meta JSON (project state)
+- CSV (spectral data)
+- PNG (images)
 
-## 👤 Author
+## License
 
-**iken008 (Kenya Iijima)**
-Tokyo University of Science — Takemura Lab
+MIT License - Copyright (c) 2025 Kenya Iijima (iken008)
 
-## 🔖 Credits & Attribution
+Based on the spectral viewer tutorial by KLV Co., Ltd.  
+https://www.klv.co.jp/corner/spectral-python-viewer.html
 
-This software originated from learning with the KLV tutorial viewer.
-Original tutorial concept © KLV Co., Ltd.
-Modifications & extensions © 2025 iken008 — MIT License
+## Author
 
-## 📄 License
-
-MIT (for extended functionality by iken008)
-See `LICENSE` for details.
+Kenya Iijima ([@iken008](https://github.com/iken008))
