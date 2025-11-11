@@ -424,7 +424,7 @@ class HyperspecTk(tk.Tk):
         self.pw.pack(fill=tk.BOTH, expand=True, padx=6, pady=(0, 6))
         self.left = ttk.Frame(self.pw)
         self.right = ttk.Frame(self.pw)
-        self.pw.add(self.left, weight=4)
+        self.pw.add(self.left, weight=1)
         self.pw.add(self.right, weight=1)
 
         # Shortcuts for deletion
@@ -795,10 +795,12 @@ class HyperspecTk(tk.Tk):
         
         # Show loading status
         self._set_status("Loading HDR file...")
+        abs_path = os.path.abspath(path)
+        self._hsi_cache.pop(abs_path, None) # 既存キャッシュを削除して再読み込み
         
         try:
             img = spectral.open_image(path)
-            data = np.asarray(img.load())
+            data = img.open_memmap(writable=False)  # ← メモリマップで遅延読み込み
         except Exception as e:
             self._clear_status()
             messagebox.showerror("Load error", str(e))
@@ -806,7 +808,8 @@ class HyperspecTk(tk.Tk):
 
         if data.ndim == 2:
             data = data[:, :, None]
-
+        if data.dtype == np.float64:
+            data = data.astype(np.float32, copy=False)  # メモリ使用量半減
         self.img = img
         self.data = data
         self.path_var.set(os.path.abspath(path))

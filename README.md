@@ -29,6 +29,16 @@ Note: tkinter is included with Python on Windows/macOS. On Linux: `sudo apt-get 
 python spectral_viewer.py
 ```
 
+### Build as Standalone Executable
+
+To create a standalone `.exe` application using PyInstaller:
+
+```bash
+pyinstaller .\src\spectral_viewer_v1.6.7.py --onefile --noconsole --icon=icon/original_mag_trsp.png
+```
+
+The built executable will be in the `dist/` directory.
+
 ### Quick Start
 
 1. Press `O` to open an HDR file
