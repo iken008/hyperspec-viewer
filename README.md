@@ -34,7 +34,7 @@ python spectral_viewer.py
 To create a standalone `.exe` application using PyInstaller:
 
 ```bash
-pyinstaller .\src\spectral_viewer_v1.6.7.py --onefile --noconsole --icon=icon/original_mag_trsp.png
+pyinstaller .\src\spectral_viewer_v1.7.8.py --onefile --noconsole --icon=icon/original_mag_trsp.png
 ```
 
 The built executable will be in the `dist/` directory.
