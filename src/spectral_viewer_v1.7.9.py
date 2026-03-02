@@ -50,6 +50,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 # Third-party library imports
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
+import tkinter.font as tkfont
 
 import numpy as np
 
@@ -287,14 +288,17 @@ def flip_x_from_display(x: float, width: int) -> float:
 _ICO = b"AAABAAEAQEAAAAEAIAAoQgAAFgAAACgAAABAAAAAgAAAAAEAIAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALywsAC8rJwAvKicALiomAC0pKgMuKicTLionLC0pJzYtKSY2LSkmNi0oJjYtKSc2LSgmNiwnJTYrJyU2LCclNiwoJjYsKCY2LCgmNi0oJjYsKCY2LCgmNi0oJjYtKSY2LSkmNi0oJjYsKCY2LCgmNi0oJjYtKCY2LSgmNi0pJjYtKSc2LSgmNiwoJjYsKCY2LSgmNi0pJjYtKSY2LSkmNi0pJzYtKSY2LSknNi0pJzYtKSc2LSknNi0pJzYtKSc2LSgmNi0oJjYtKSc2LSknNi0pJzYtKSc2LiknNi0qJywtKiYTLConAy4pJQAtKiYALSklAC0qKgAAAAAAOTQyAColIQAwKygALysoCy4pJ08uKSeiLiomyS4qJuMuKiXqLiol6i4qJeouKSXqLikl6i4qJeotKSXqLSkl6i4pJeouKSXqLiom6i4qJuouKSXqLikl6i4pJeouKSXqLikl6i4qJuouKiXqLikl6i4pJeouKSXqLikl6i4pJeouKiXqLiol6i4pJeouKSXqLikl6i4pJeouKSXqLiol6i4qJeouKibqLiom6i4qJuouKibqLiom6i4pJeouKibqLiol6i4pJeouKibqLiol6i4pJeouKibqLiom6i4qJuouKibjLiolyS4qJaMuKiZVLSonCzAsJwAjHRQAOTYzACwoJQAtKCYAMCsoHS8qJqMuKib2Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJv8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y8qJv8uKiX/Liom/y4qJf8uKiX/Liol/y4qJf8uKiX/Liom/y4qJf8uKiX/Liom/y4qJv8uKiX/Liol9y4qJqcxLSkmLCgkAB8cFgAxLSsAMi4rFC8rJ7IuKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/LisnvzAtKRsvLCgALCYiAC4qJm4uKiX+Liol/y4pJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJP8uKiX/Liol/y4qJf8uKiWCHhcPAC4pJxMvKibGLyol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKib/Lyok/ywqLf8sLDr/LSks/y8pJP8uKSX/Liol1S8sJyAwLCo4Lyom6i8qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8vKSb/Likj/ystQP8pPaD/JkXL/yk8mP8sKzb/Likl/y4qJfMuKiZLLSgmXS4pJvkuKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiT/Liol/y4qJf8uKiX/Liol/y4qJf8vKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y8qJf8vKiT/Liol/y4qJf8vKiX/Liol/y4qJf8vKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKyX/Liok/yssQP8oQLP/JEnv/yNJ8v8lSer/KTVq/y0pI/8uKib8LSkmai4nI24tKSP8Likj/y4pI/8uKSP/Lioj/y4qI/8uKiL/Likj/y0pI/8uKCP/Ligi/y0nI/8uJyP/Ligk/y4oI/8uKCP/Licj/y4nJP8uJyP/Ligj/y4nI/8uJyP/Ligi/y4oIv8uKCL/Ligi/y8oI/8vKCP/Ligk/y0oJf8tKCX/LSgl/y0oJv8tKCb/LSgl/y0oJf8tKCX/LCgl/ywoJv8sKCb/LSgl/y0oJv8sKSX/LSkl/y0pJf8sKCX/LCgl/ywpJv8tKSb/LCkl/y0pJP8tKSX/Likj/yssP/8nQK//JUnu/yNI7/8jSPD/Jkfk/ysyYP8uKSP/Lyom/C8qJ24sL1RuLi9T/C4vUv8uL1P/Li9T/y4vUv8uMFL/LjBS/y81U/8uQFL/LklR/y1MUv8tSlP/LUpT/y1KU/8tS1P/LUpT/y1KU/8tS1T/LUtT/y1LUv8tS1L/LUtS/y1LUv8tS1L/LUtS/y1LU/8sS1T/MUtJ/zZJN/87SSn/O0ko/zpJJ/87SSj/O0ko/zpJJ/87SCf/PEgn/z5HJ/9DRib/REUl/0VGJf9KQyX/UT0k/1I8JP9SPCT/Ujwj/1I8JP9TPCT/Uzwk/1M9JP9UPCT/Uz0i/z43RP8nQbX/JUru/yRI7/8kSPD/JUjo/yg6jf8tKi3/Likl/y8qJfwvKidtOULMbThF2fw2R+T/Nkbj/zVH4v82RuP/Nkfj/zZH4/82S+P/NVbj/zdv4/85nOf/O7nr/zm77P85uuz/OLvs/zi77P84u+z/OLvs/zi77P84u+z/OLvs/zi77P84u+z/OLvs/zi67f85u+b/S7ev/1+xZ/9osEP/a7A6/2uwOf9rsDn/a685/2uvOP9rrzf/bq02/3WrNf+DpjL/jqMv/5ShLf+nlir/voQm/8h9JP/KfCX/ynwl/8l8JP/KfCX/ynwk/8p8JP/KfSX/zHwj/6pxSP9HVLv/I0nu/yRJ7/8lSO//JUjn/yg5i/8tKi7/Liok/y4pJf8vKiX8LyonbS0uR20wMmL8Mz2n/zVH5P82SPX/Nkj0/zZI9P82SPT/NUj0/zRI8/8zR/P/MVTy/zWI9v85v/v/N8b9/zfG/f83xv3/N8b9/zfG/f83xv3/N8b9/zfG/f83xv3/N8b9/zfG/v84xfb/UsCg/2q6SP9vujj/b7o5/2+6Ov9vuzr/b7o6/265Of9vuTj/cbg2/3e2NP+JsDH/lqwu/52qLP+3mCf/0YUj/9aBI//XgyP/2IMj/9eDJP/XgyP/2IMk/9eDI//XgyP/2IMj/7V3Sv9PWLz/JUnw/yRJ7/8kSfD/Jkjn/yg5iP8rKi3/Liok/y4qJf8uKiX/Lyol/C8qJ20vKCRtLSkj/C0qLP8vM2b/NUTN/zZI9P82SPP/Nkjz/zZI8/80SPP/NEjy/zJI8v8yS/H/NYD0/zi/+v83xvv/N8X8/zfF/P83xfz/N8X8/zfF/P83xfz/N8X8/zfF/P83xfz/S8Gy/2u5Q/9vuTj/b7o6/2+6Of9vujn/b7o6/2+6Ov9vuDn/cLc3/3K2Nf+CsjL/kqws/56mKv+6lSj/04cr/9eHL//WiDD/14Ur/9WCJP/WgCD/1oIi/9eDJP/WgyT/14Mj/85/Kv9iXKX/Ikjy/yVJ8P8lSfD/Jkjl/yk5if8tKS3/Lioj/y4qJf8uKiX/Liol/y8qJfwvKidtLikmbS4qJvwvKiX/Likk/y8wU/82RM//Nkj0/zZI8v82SPP/Nkjz/zZI8/81SPP/M0jy/zJM8f80jfT/N8T7/zfF+/83xfv/N8X8/zfF/P83xfz/N8X8/zbF/P82xfz/P8Pi/2S7Xf9vujj/b7o6/2+6Ov9vujr/b7o5/2+6Ov9vujr/b7g4/3C3Nv91tDP/jK8z/6e3UP/Nv33/6cun//Hawv/04Mv/8+DL//HawP/qxqL/4Kpw/9mOPP/UgSP/1oEh/9eBIf/Uijf/joq2/y5S7v8iSPH/Jknl/yg5hv8rKiz/Liok/y4qJf8uKiX/Liol/y4qJv8vKib8LyonbS0pJ20uKib8Liom/y8qJf8uKiP/MDNs/zVH5v82SPP/Nkjz/zZI8/82SPP/NEjz/zNI8v8zR/L/MVbw/zem+P84xfv/NsX6/zfF/P83xfz/N8X8/zfF/P82xfz/N8X8/0/AqP9uuTz/b7o6/2+6Ov9vujr/b7o6/2+6Ov9vujr/b7o5/264OP9wtjf/kcBZ/83bp//y8+b//v7+//////////////////////////////////38+//16Nn/5buM/9iMOv/XijX/7M2r//n4+f+ksvD/M1DY/yg4hP8tKSz/Lyok/y4qJf8uKiX/Liol/y4qJf8uKib/Lyom/C8qJ20tKSZtLiom/C4qJf8uKiX/Liok/y0qLv80P6r/Nkn0/zZI8/81SPP/NUjz/zRI8/80SPP/NEjy/zJI8f8zcPL/OL76/zfF+/83xfz/N8X8/zfF/P83xfz/N8X8/zrF7/9gvG7/cLo3/2+6Ov9vujr/b7o6/2+6Ov9vuTr/b7o5/265Of9xuT3/qNCG/+zz5P/////////////////9+/j/+fPt//jt4v/47eL/+vPt//38+v////////////7+/v/y4M3/79i+///+/f/+/v3/qKeo/zU3Sv8tKir/Lyok/y4qJf8uKiX/Liol/y4qJf8uKiX/Likl/y8qJvwvKidtLColbS8qJvwvKib/Liol/y4qJf8tKiL/MDNi/zVH6P82SPP/NUjz/zRI8/80SPP/NEny/zNJ8v8ySfP/MU/y/zab9v83xvz/N8X8/zfF/P83xfz/N8X8/zbF/v9Dw9P/ablL/2+6OP9vujr/b7o6/2+6Ov9vujr/brk5/265Of9yuj//tdiZ//j79v////////////jv5f/pyKT/4KZm/9qWTP/akED/2pBA/9qXTf/gqGz/682s//nz6//////////////////8/Pz/p6Wk/zs2Mf8sKCL/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4pJf8vKib8LyonbS0qJW0vKib8Lyom/y4qJf8uKiX/Lyol/y4sNP81QsD/Nkj1/zVI8v80SPP/NEjz/zRJ8v8zSfL/Mkny/zJJ8v8xbvL/N776/zfF/P83xfz/N8X8/zfF/P82xf7/Tr+r/264PP9uujr/b7o6/2+6Ov9vujr/b7o6/265Of9uuTr/rtWR//r8+P///////v37/+3Rs//bl03/1oIl/9aAIP/WgCD/1oEi/9eBIv/VgSD/1oAg/9WDJv/bnVf/6tfD//7+////////9fX1/3Jvbf8sJyH/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Lyom/C8qJ20tKiVtLiom/C4qJf8uKiX/Lisl/y8rJv8uKiX/MjqP/zdI8/81SPL/NEjz/zRI8/80SfL/NEny/zNJ8v8zSfP/MFHx/zai9v83xvv/N8T7/zfF/P83xfz/OMX4/1i9gv9uuTf/bro5/2+6Ov9vujr/b7o6/2+6Ov9tuTf/lMpv//L47v///////fz6/+fCm//VhzH/1oAg/9WCI//WgiP/1oIj/9WCI//WgiP/1oIj/9WCI//XgSP/yHkh/3VYOv+wr6///v7+///////X1tX/S0dE/ywoJP8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liom/y8qJvwvKidtLiolbS4qJvwuKiX/Liol/y4qJf8uKiX/Lioj/zAyXv82SOf/NUjz/zRI8/80SPP/NEny/zRJ8v80SfL/M0ry/zJJ8v8ze/P/N8L7/zbF+/83xfz/N8X9/zzF6f9ju1//cLk3/2+6Of9vujr/b7o6/2+6Ov9uujn/eL1H/9fqyP///////////+zKpv/Whi3/14Eh/9eCI//WgiT/1oIj/9aCI//WgiP/1oIj/9aCI//XgiL/038k/4BTJP8uKCL/Pzs4/769vP///////////6Siof8wLCj/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4pJf8vKib8LysnbS0qJW0uKib8Liol/y4qJf8uKiX/Liol/y8rJP8uLj7/NkTR/zVI9f81SPP/NUjz/zRI8/80SfL/NEny/zJK8v8ySvL/MVrx/zaw+f82xfv/OMT8/zbF/v9Gw87/ablH/3C6OP9vujr/b7o6/2+6Ov9vujn/bbk3/57OfP/6/Pn///////Tk1P/Yjz7/1oAh/9aCJP/WgiP/14Ik/9aCI//WgiP/1oIj/9aCI//XgiP/2YIj/6hpJv87MCT/LCkl/ywnI/9UUU7/4+Pi///////p6Oj/U1BN/ywoI/8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKSX/Lyom/C8rJ20sKiVtLyom/C4qJf8uKiX/Liol/y8rJv8vKyX/LSst/zM/sv82SPb/Nkjz/zZI8/81SPP/NEjz/zRI8/8ySfL/Mkvz/y9M8v80jfT/NsX7/zbF+/81xvz/T8Co/225O/9uujn/b7o6/2+6Ov9vujr/bro5/3K5PP/K47n///////79/P/js33/1IAh/9WCIv/WgiP/1oIj/9aCI//WgiP/1oIj/9aCI//WgiP/1oIk/89/JP9mRyT/LCkl/y4qJf8uKiX/LSkl/5mXlv///////////46Miv8sKCP/Likl/y4qJf8uKiX/Liol/y4qJf8uKiX/Likl/y8qJvwvKydtLCklbS4pJfwuKiX/Liol/y4qJf8uKiX/Liol/y0qJf8yOY3/Nkj0/zZI8/82SPP/NUjz/zRI8/80SPP/NEny/zNK8/8xSvL/MWjy/zi7+v82xfz/OcX1/1y8e/9wujf/bro5/2+6Ov9wuzv/b7s6/2+5OP9+wE//6PLg///////37OD/2ZFA/9iBIf/XgiP/1oIj/9aCI//WgiP/1oIj/9eDJP/WgiP/1oIj/9mDI/+tbCT/OzAk/y0qJf8uKiX/Liom/ywnIv9bWFT/8PDv///////Bv77/NTAt/y4pJP8uKiX/Liol/y4qJf8uKiX/Liol/y4pJf8vKib8LysnbS0pJm0uKSX8Liol/y4qJf8uKiX/Lysm/y4rJv8uKiP/MDRs/zZI7f82SPP/Nkjz/zVI8/80SPP/NEjz/zRJ8v8zSfL/Mkry/y9T8f82ovf/N8b8/z/E4P9lulf/cLo5/2+6Ov9vujr/cLs7/2+7Ov9uuTf/i8Vi//X58f//////8dm//8yBK/+3cSP/yHok/9eCI//XgSP/14Ej/9eBI//YgiP/14Ej/9iCI//UgCT/dE4l/y0pJf8uKiX/Liol/y4qJf8tKSP/Pzs3/9fW1f//////3Nzb/0I+O/8tKST/Liol/y4qJf8uKiX/Liol/y4qJf8uKib/Lyom/C8rJ20tKSZtLikm/C4qJf8uKiX/Liol/y4qJf8uKiX/Lyoj/y4wTP81Rt7/Nkj0/zZI8/81SPP/NEjz/zRI8/80SfL/Mkny/zNK8/8wTPH/Mn7z/zbE/f9Kwbn/bbpA/3C7Ov9vujr/b7o6/2+6Ov9vuzr/bbg3/5XKb//5/Pj//////+HEpf90TiX/PDAk/2FEJP/EdyT/2IIj/9iBI//YgSP/2IEj/9iBI//agiP/tG8l/0AzJP8tKSb/Liol/y8rJv8uKiX/Liol/zIuKv+8u7r//////+rq6v9QTEn/LSgk/y4qJf8uKiX/Liol/y4qJf8uKiX/Likl/y8qJvwvKidtLSkmbS4qJvwuKiX/Liol/y4qJf8uKiX/Liol/y4qJP8tLDf/NEPI/zZI9f82SPP/NUjz/zRI8/80SPP/NEny/zJJ8v8yS/L/MUvy/y9e8v83s/X/WL+E/3C6OP9vujr/b7o6/2+6Ov9vujr/b7s6/224Nv+Yy3D/+vz5//////+2q6D/NS0k/ywpJv8uKiX/dE4j/9F/JP/ZgSP/2IEj/9eBI//YgSP/038j/3NNI/8uKSX/Liol/y4qJf8uKiX/Liol/y4qJf8xLSn/tbSz///////w7+//WFRR/ywnI/8uKiX/Liol/y4qJf8uKiX/Liol/y4pJf8vKib8LysobS0qJW0vKib8Lyol/y4qJf8uKiX/Liol/y8qJf8uKyX/LSsp/zM+qP82SfX/Nkjz/zZI8/81SPP/NEjz/zRI8/8ySfL/Mkrz/zFM8/8vT/P/PZHZ/2a7Vf9vujf/b7o6/2+6Ov9vujr/b7o6/2+6Ov9uuTb/ksdq//j79v//////rayq/y8rJ/8uKiX/Liom/zcuJf+SXiT/1YEk/9eBI//XgiP/14Ij/5pjJf86MCT/Liom/y4qJf8uKiX/Liol/y4qJf8uKiX/NDAs/7+/vv//////6enp/09LSP8sKCP/Liol/y4qJf8uKiX/Liol/y4qJf8uKSX/Lyom/C8rKG0tKiVtLyom/C8qJv8uKiX/Liol/y4qJf8uKiX/Liol/y8qI/8yOIH/N0ny/zZI8/82SPP/NUjz/zRI8/80SPP/M0ny/zJK8/8xTPP/L030/zxkpP9przz/b7o6/2+6Ov9vujr/b7o6/2+6Ov9vujr/brg2/4jCW//y9+3//////8nIx/83My//LSkk/y4rJf8tKSb/PTEk/4xbJf/FeCT/zHwk/5xlJf9ENST/LSkm/y4qJf8uKiX/Liol/y4qJf8uKiX/LSkk/0I/Ov/b29r//////9va2v9BPTn/LSgk/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y8qJvwvKidtLSkmbS8qJvwuKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiP/LzJZ/zdH5/81SPT/NUjz/zVI8/80SPP/NEjz/zNJ8v8ySvP/MUzz/zFN6f8vO2b/WIoy/2+8Ov9vujr/b7o6/266Ov9uujr/brk6/2+4Nv97u0b/4u7W///////o6Of/UU1K/ywnI/8uKiX/Liol/y4qJf8zLCX/Tjok/1M+JP85LyT/LSkl/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/ywnIv9kYF7/9PTz//////+8urn/My8r/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJv8vKib8LyonbS0oJm0uKSX8Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liok/y4tOv81Q8v/NUj0/zVI8/80SPP/NEjz/zRI8/8zSfL/MUny/zFL9P8vSMb/LCs4/0FRKf9rsDr/b7s6/2+6Ov9uujr/brk5/2+5Of9vtzf/cbM2/7nMpf///////v/+/4+Ni/8sJyT/Likl/y4qJf8uKiX/Liol/ywpJf8sKSX/LSol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJP8wLCj/qKal///////+/v7/h4WC/ywoI/8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKib/Lyom/C8qJ20tKSZtLikl/C4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y8rJf8uKij/Mzyc/zZI9P80SPP/NEjz/zRI8/80SPP/M0ny/zJJ8v8xS/P/Lz2Q/y4qJv8vLiT/VoMy/3C7Ov9vujr/b7o6/2+5Of9vuDj/crg2/2SYMf9pb13/8PDw///////e3d3/T0tJ/ywoI/8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8rJyL/Y19d/+3s7P//////4eHg/01JRv8sKCP/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y8qJvwvKidtLiknbS4qJvwuKiX/Liol/y4qJf8uKiX/Liol/y8rJv8vKyb/Lioj/y8yYf83Ruj/NUj0/zZI8/82SPP/NUjz/zNJ8v8ySfL/MUnj/y4xWf8vKiP/Likl/ztKKP9pqjn/b7o6/2+5OP9vuDj/cLg3/3CwNv9FXCr/NC8r/7Curf///////////7m4t/89Ojb/LCgj/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y8qJv8rJyP/SkdD/8/Ozf///////v7//5SSkf8vKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJv8vKib8LysnbS0pJm0uKib8Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Lysm/y8qJf8uKzP/NEC7/zZI9f82SPP/Nkjz/zVI8/80SfL/Mkr0/zFCt/8uKzL/Liok/y4qJf8uKyT/TWwv/262Ov9vujn/b7k4/3K0N/9TdS7/MS4l/ywoI/9STkv/3t3c///////+/v7/s7Kx/0ZCP/8rJyL/LSkk/y4qJf8uKiX/Liol/y4qJf8uKiX/Lysm/y0pJP8tKCP/VFFN/8fGxf///////////8nJyP9BPjr/LSkj/y4qJf8vKyb/Liol/y4qJf8uKiX/Liol/y4qJf8uKSX/Lyom/C8qJ20tKSZtLiom/C4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Lioi/y40bf82R+r/NUjz/zVI8/80SPP/NEjz/zNJ6P8uNWz/LSkk/y4qJf8uKiX/LSkl/zAxJf9LbC7/ZJ42/2ObNf9Oay3/MjIl/y4pJf8uKiX/LSkj/29saf/r6+v////////////Pz87/cnBt/zs3Mv8sKCP/Kyci/ysnIv8rJyL/Kyci/y4qJf9CPzv/hIKA/97e3f///////////97e3f9aV1T/LCgi/y4qJf8uKiX/Lysm/y4qJf8uKiX/Liol/y4qJf8uKiX/Likl/y8qJvwvKidtLSgmbS4qJvwuKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Lyol/y8rJP8uKzD/Mj2k/zZI8/80SPT/NUj0/zRJ8f8xPqP/LSsv/y4qJP8vKib/Liol/y4qJf8uKSX/Lisl/zQ3J/8yNiX/Liok/y4qJf8uKiX/Liol/y4qJf8uKiX/cm9t/+Tj4/////////////f39//Lysn/l5WT/3Nxb/9lY2D/ZmRi/3l3df+hn57/19bV//z8/P///////////9ra2f9iX1z/LCgj/y4qJf8uKiX/Liol/y8rJv8uKiX/Liol/y4qJf8uKiX/Liol/y4qJv8vKib8LyonbS0oJm0uKSX8Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y8qJf8vKyX/Liok/ywtOv80PJj/NkbX/zVH3/8zPqT/Li08/y8qJP8tKyX/Liol/y4qJf8vKiX/Likl/y4qJP8uKSX/Likl/y4pJf8uKiX/Liol/y4qJf8uKiX/Liol/y0pJf9cWFb/w8LB//v7+//////////////////7+/v/9/f3//f39//9/f3/////////////////9/f3/7e1tP9TT0v/LCgj/y4qJf8uKiX/Liol/y8rJv8vKyb/Liol/y4qJf8uKiX/Liol/y4qJf8uKSX/Lyom/C8qJ20tKSVtLiom/C4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y8rJv8uKyb/Liol/y8rJv8vKiX/LSsq/y4uRP8uMEz/Lisw/y8rJf8vKyb/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8tKiX/Liol/y4qJf8uKiX/Lyol/y4qJf8uKSX/LCcj/zw4NP99enj/xsXF//Dw8P/+/v7///////////////////////39/f/r6+v/vby7/3FubP84My//LSgj/y4qJf8uKiX/Liol/y4qJf8uKiX/Lysm/y4qJf8uKiX/Liol/y4qJf8uKiX/Likl/y8qJvwvKydtLSklbS4pJfwuKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8vKyb/Lysm/y4qJf8uKiP/Lioj/y8qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKST/LCcj/zg0Mf9cWFb/g4B+/52bmf+hn57/oZ+e/5qYlv98eXf/VFFO/zUxLf8sJyL/Liok/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJv8vKib8LyonbS0pJW0uKSX8Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKib/Lysm/y8qJv8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJv8uKiX/Liol/y4qJv8uKiX/Liol/y4qJv8uKiX/LCgj/ywoIv8tKST/LSgl/y0pJf8sKCT/Kyci/ywoI/8uKSX/Liom/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKib/Lyol/C8qJ20tKSVtLikl/C4qJf8vKyb/Lysm/y4qJf8uKiX/Liol/y4qJf8uKiX/LSkk/y0oI/8uKCP/LSgj/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJv8uKSX/LCcj/ywoI/8sJyP/LSkk/y4qJf8uKiX/Liol/y4qJf8uKiX/LSkk/ysnIv8sKCP/Liom/y8rJ/8uKiX/LCgj/ywoI/8uKSX/Likm/y4qJf8vKyb/Liol/y8rJv8tKST/LCgj/ywoI/8sKCL/Liok/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liom/y8qJvwvKidtLSklbS4qJfwuKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/zs4M/9XVFH/WFVT/1dTUP85NjH/Liol/y8rJv8vKyb/Liol/y8rJv8uKyT/ODUw/1VTUP9YVVL/WFVS/z06Nf8tKST/Liol/y4qJf8uKiX/LSgk/z05Nv9nZWL/kI6N/6mopv+wrq3/paOh/4iFhP9cWFX/NjEu/ywnJP8uKiX/Lysm/y8rJv8vKyX/R0RA/1lWU/9YVlP/UExJ/zEsKf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8vKib8LyonbS0pJm0uKib8Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/ysnIv9qaGT/7Ozr//Hx8f/p6en/Y2Bd/ywoI/8vKyb/Lysm/y8rJv8uKiX/LCgj/1xZVv/n5ub/8vHx/+/v7v91c3D/Kyci/y4qJf8uKSX/Lysn/25raf/My8v/9vb2////////////////////////////8O/v/7m3tv9ZVVP/LSkk/y4qJf8vKib/Lysm/6Kgn//09PT/8/Pz/8rIyP89ODX/Likl/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKib/Lyom/C8qJ20tKCZtLikl/C4qJf8uKiX/Lysm/y4qJf8uKiX/Liol/y4qJf8rJyL/b21p//v7+///////+Pj4/2dkYf8rJyL/Liol/y4qJf8uKiX/Liol/ysnI/9gXVr/9fX1///////+/v7/enl1/yonIv8uKiX/LSkl/3VycP/u7u7/////////////////+fn5//b29v/7+/v/////////////////39/e/2BdWv8sKCP/Likm/zArJv+rqaj////////////V1NT/Pjo2/y4pJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liom/y8qJvwvKidtLSkmbS4pJfwuKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Kyci/25saf/6+vr///////f39/9nZGH/Kyci/y4qJf8uKiX/Liol/y4qJf8sJyP/YF1a//T09P///////f39/3p4df8rJyL/LSkk/0hEQP/a2dn////////////v7+7/oZ+e/2xpZ/9kYV3/dHBu/6+trP/19fX////////////GxcT/Ozcz/y4oJf8vKyb/q6mo////////////1NTT/z05Nf8tKST/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4pJf8vKib8LysnbS0pJW0uKSX8Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/ysnIv9vbGn/+vr6///////39/f/Z2Rh/ysnIv8uKiX/Liol/y4qJf8uKiX/LCcj/2BdWv/09PT///////39/f96eHb/Kici/ywnIv97eHb//v7+////////////j42L/y8rJv8rJyL/Kyci/ysnIv8zLyr/o6Gg////////////9PT0/2NgXf8sJyP/Lysm/6upqP///////////9TT0/89OTX/LSkk/y4qJf8uKiX/Liol/y4qJf8vKyb/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Lyom/C8qJ20tKiVtLikl/C4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8rJyL/b2xp//r6+v//////9/f3/2dkYf8rJyL/Liol/y4qJf8uKiX/Liol/ywnI/9gXVr/9PT0///////9/f3/enh2/ysnI/8tKST/jImH/+Tj4//k4+L/1dTT/1BNSf8sKCP/Lysm/y8rJv8vKyb/KiYh/3FubP/7+/v///////z8/P90cW7/KyYi/y8rJv+rqaj////////////U09P/PTk1/y0pJP8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liom/y8qJvwvKidtLiolbS4qJvwuKib/Liol/y4qJf8uKiX/Liol/y4qJf8vKyb/LCgj/29sav/6+vr///////f39/9mY2D/KiUh/y0oJP8tKSP/LSkj/y0pI/8qJiD/X1xY//T09P///////f39/3p4dv8rJyP/Lyol/zw4M/9HQz//SUVA/0VBPv8xLSj/Liok/ywpJP8rJyL/Liol/0M/PP+vraz////////////39/f/Z2Rh/ywnI/8vKyb/q6mo////////////1NPT/z05Nf8tKST/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJv8vKib8LysnbS0qJW0uKib8Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/ysnIv9vbGr/+vr6///////4+Pj/e3h3/0dDQP9JRkP/SkZD/0pHQ/9JRkP/R0RA/3VycP/29vX///////39/f96eHb/Kycj/y8rJv8tKST/LSkk/y0pJP8rJyL/Kycj/zUwLP9MSUb/cG5r/5+dm//W1tX//fz8////////////z87N/z87OP8tKST/Lysm/6upqP///////////9TT0/89OTX/Likk/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Lyom/C8qJ20tKSVtLikl/C4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8rJyL/b2xq//r6+v///////v7+/+zr6//k5OP/5OTk/+Tk5P/k5OT/5OTk/+Tk4//r6ur//v7+///////9/f3/enh2/ysnI/8uKiX/Lysm/y8rJf8tKST/RkI+/4F+ff+8urr/5eXl//r6+v//////////////////////5OTj/2hlY/8sKCT/Lyol/zArJv+rqaj////////////U09P/PTk1/y0pJP8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liom/y8qJvwvKidtLikmbS4qJvwuKiX/Liol/y4qJf8uKiX/Liol/y4qJf8vKyb/Kyci/25saf/6+vr//////////////////////////////////////////////////////////////////f39/3p4dv8rJyP/Liol/y4qJf8wLSj/dHFv/9fW1v/9/f3////////////////////////////u7e3/trSz/1xYVv8uKiX/Liol/y8qJv8wKyf/q6mo////////////1NPT/z05Nf8tKST/Liol/y4qJf8uKiX/Liol/y8rJv8uKiX/Liol/y4qJf8uKiX/Liol/y4qJv8vKib8LysobS0pJm0uKSb8Liol/y4qJf8vKyb/Liol/y4qJf8uKiX/Lysm/ysnIv9ubGn/+vr6///////+/v7/9fX1//Hx8f/x8fH/8vHx//Lx8f/y8fH/8fHx//X09P/+/v7///////39/f96eHb/Kycj/y8rJv8tKST/bWtp/+/u7v/////////////////9/P3/6ejo/8PCwf+QjY3/WlZT/zUxLP8tKCP/Lysm/y8rJv8vKib/MCsn/6upqP///////////9TT0/89OTX/Liol/y8rJv8vKyb/Liol/y8rJv8vKyb/Lysm/y4qJf8uKiX/Liol/y4qJf8uKib/Lyom/C8rKG0tKSZtLikl/C4qJf8uKiX/Liol/y4qJf8uKiX/Lyom/y8rJv8sKCP/b2xp//r6+v//////+fn5/4aEg/9YVFH/WldU/1pXVP9bV1T/W1dV/1hUUv+Bfn3/9vb2///////9/f3/enh2/ysnI/8uKiX/OTUx/8bGxf////////////r6+v/Ew8H/f3x6/1FNSv82Mi7/LCgk/ywnI/8tKST/Liol/y4qJf8uKiX/Lyom/zArJ/+rqaj////////////U09P/PTk1/y4qJf8vKyb/Liol/y8rJv8vKyb/Lysm/y4qJf8uKiX/Liol/y4qJf8uKiX/Liom/y8qJvwvKydtLiknbS4qJvwuKiX/Liol/y4qJf8uKiX/Liol/y8rJv8vKyb/Kyci/29saf/6+vr///////f39/9lYl//KSUg/ywoI/8rJyL/LCci/ywoI/8pJSD/XVtY//T09P///////f39/3p4dv8rJyL/LSgj/0tHQ//n5ub///////////+wr67/Ojcy/ywoI/8tKCT/Liol/y4qJf82Mi7/Pjo2/z46Nv84NDD/Liol/y4qJv8vKyb/q6mo////////////1NPT/z05Nf8tKST/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJv8vKib8LyonbS0pJ20uKib8Liol/y4qJf8uKiX/Liol/y4qJf8vKyb/Lysm/ysnIv9ubGn/+vr6///////39/f/ZmRh/ysnIv8uKiX/Liol/y4qJf8uKiX/LCgj/19dWv/09PT///////39/f96eHb/Kycj/y0pJP9NSUX/6Ojo////////////hYOB/yolIf8vKyb/Lysm/y4pJP8vKyb/l5aU/9fX1v/Y19b/l5WT/y8rJv8vKib/Lysm/6upqP///////////9TT0v89OTX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKib/Lyom/C8qJ20uKSduLyom/C4qJf8uKiX/Liol/y4qJf8uKiX/Lysm/y4qJf8sKCL/bmxp//r6+v//////9/f3/2ZkYf8rJyL/Liol/y4qJf8uKiX/Liol/ysoI/9fXVr/9PT0///////9/f3/enh2/ysnIv8uKiT/Pzs3/9XU1P///////////8vKyf9PTEn/MCwo/y4rJv81MSz/bWpo/+rq6f///////////5KRj/8sKCT/Lyom/zArJv+rqaj////////////U09P/PTk1/y0pJP8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liom/y8qJvwvKidtLSgmbi4qJvwvKyb/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Kyci/25saf/6+vr///////f39/9nZGH/Kyci/y4qJf8uKiX/Liol/y4qJf8rKCP/YF1a//T09P///////f39/3p4dv8rJyP/Lysm/y4qJf+Nion//f39////////////4N/f/7Oysv+sq6r/wsHA/+/v7////////////9/f3v9PTEn/LCgj/y4qJv8wKyb/q6mo////////////1NPT/z05Nf8uKST/Lysm/y4qJf8vKyb/Lysm/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJv8vKib8Lyonbi0oJl0uKSb5Liol/y4qJf8uKiX/Lysm/y4qJf8uKiX/Lysm/ysoI/9vbWr//f39///////6+vr/aGVi/ysnIv8uKiX/Liol/y4qJf8uKiX/LCgj/2BeW//39/f///////////97eXf/Kyci/y4qJf8uKST/Ozcz/6Wkov/39vb//////////////////////////////////////97d3f9saWf/Liok/y4qJf8vKib/MCsn/62rqv///////////9fW1v8+Ojb/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKib/Lyom+y0pJmcxKyo2Lyom6C8rJv8uKiX/Liol/y8rJv8uKiX/Lysm/y8rJv8tKST/WVZS/7a1tP+7ubn/tbOy/1RRTf8tKST/Liol/y4qJf8uKiX/Liol/y0pJP9PTEn/srGw/7u6uP+4t7b/YV5a/ywoI/8vKyb/Liol/y4qJf82Mi3/cW5r/7Szsv/a2tr/5+fn/+rq6v/k5OP/z87O/5mXlv9QTEn/LSkk/y4qJf8uKiX/Lyol/y8qJ/+Bfn3/vLu6/7y7uf+dmpn/ODMw/y4qJf8uKiX/Liol/y4qJf8uKiX/Lysm/y4qJf8uKiX/Liol/y4qJf8uKib/Lyom/y4qJvEuKihGKyglEC4qJsEvKyb/Liol/y4qJf8uKiX/Lysm/y8rJv8vKyb/Lysm/zAsJ/8yLir/My8q/zIuKv8wLCf/Lysm/y4qJf8uKiX/Liol/y4qJf8uKiX/Lysn/zIuKv8yLir/Mi4q/y8sJ/8uKiX/Liol/y8rJv8uKiX/Liok/y0oI/8yLir/Qj07/0xIRv9PS0j/SUVC/zw4NP8uKib/LCgk/y4qJf8uKiX/Liol/y4rJv8vKyb/MSwo/zIuKv8yLir/MS0p/y8qJv8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y8qJv8uKibNLyooGjIrKQAvKihmLyom/C4qJf8uKiX/Liol/y8rJv8vKyb/Lysm/y8rJv8uKiX/Liol/y4rJP8uKiT/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJv8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4pJf8tKCT/LSgk/y0pJP8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Lism/y4qJf8uKiX/Liol/y4qJf8uKib/LiondC4rJwAwKykAMS0rDi8rJ6guKib/Liol/y4qJf8vKyb/Lysm/y8rJv8vKyb/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8vKyb/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Lysm/y4qJf8vKyb/Lysm/y8rJv8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKiX/Liol/y4qJf8uKib/LionsS8sKhQvKygALyooADAsKgAxLisaLysnly8qJvEvKyb/Lysm/y8rJv8vKyb/Lysm/y8rJv8vKyX/Lyol/y8qJf8vKyX/Liol/y8qJf8vKiX/Liol/y4qJf8vKyb/Lyol/y4qJf8vKiX/Lyol/y8qJf8vKiX/Lyol/y8rJf8uKiX/Liol/y8qJf8vKyb/Lysm/y8rJv8vKyb/Lysm/y8qJf8uKiX/Liol/y4qJf8vKiX/Lysm/y8qJf8uKiX/Liol/y4qJf8uKiX/Lyol/y8rJv8vKyb/Lyol/y4qJf8vKiX/Liol/y8rJf8uKiX/Liol/y8rJf8uKiXxLyonnTEsKx4wKygALisnADMwLQAvLCkAMC0qADIvLQcuKic+Lyomii4qJ7wvKibGLykmxi8qJsYvKiXGLyolxi8qJcYvKiXGLyolxi8qJcYvKibGLyomxi8pJsYvKSbGLyomxi8qJsYvKibGLyomxi8qJsYvKiXGLyokxi8qJcYvKiXGLyolxi8qJsYvKiXGLyomxi8qJcYvKiXGLyomxi8pJsYvKSbGLyomxi8qJcYvKiXGLyolxi8qJcYvKiXGLyolxi8qJsYvKiXGLyolxi8qJcYvKibGLyomxi8qJcYvKiXGLyslxi8qJcYvKiXGLiolxi4qJr0vKiaPLyonQjItKwcwLCkALikmADEtLQAAAAAAODUyADAtKgAxLisALSomACwqFgAvKysMLiooEC0oJhAtKSUQLSolEC4qJhAuKiYQLiomEC4qJhAuKicQLikmEC4pJhAuKSYQLikmEC4pJhAuKSYQLikmEC4pJhAtKSYQLiomEC4qJhAuKiYQLSkmEC4pJhAuKSYQLikmEC4pJhAtKSYQLSkmEC0pJhAtKSYQLSkmEC4pJhAuKSYQLSkmEC0oJhAtKCYQLikmEC4pJhAtKSYQLikmEC4pJhAtKSYQLSkmEC0pJhAtKiUQLSolEC4qJhAuKiYQLiomEC4rJhAuKycM3lcJAC8qJgAxLCoAMSwpADMuLQAAAAAAgAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAE="
 
 def set_icon(win):
-    """Set application icon for window."""
+    """Set application icon for window and taskbar."""
     icon_file = tempfile.NamedTemporaryFile(delete=False, suffix=".ico")
     icon_file.write(base64.b64decode(_ICO))
     icon_file.close()
+
+    # tkinter standard (sets title bar / ICON_SMALL)
     try:
         win.iconbitmap(icon_file.name)
-    except:
+    except Exception:
         pass
+
 
 
 def enable_taskbar_icon(app_id="iken008.hsi.viewer"):
@@ -433,14 +437,17 @@ class HyperspecTk(tk.Tk):
     # =========================================================================
     def __init__(self) -> None:
         super().__init__()
-        enable_taskbar_icon()
+        # Withdraw before showing so the taskbar button is created AFTER
+        # iconbitmap() is called, preventing the default tkinter feather
+        # from being cached as the taskbar icon.
+        self.withdraw()
         set_icon(self)
         self.title(APP_TITLE)
         self.geometry(APP_GEOMETRY)
 
         # Initialize state variables
         self._init_state_variables()
-        
+
         # Build UI components
         self._build_menu()
         self._build_topbar()
@@ -449,12 +456,15 @@ class HyperspecTk(tk.Tk):
         self._build_right_panel()
         self._set_sliders_state(tk.DISABLED)
 
+        # Re-show window — taskbar button is now created with the correct icon
+        self.deiconify()
+
         # Set window on center
         self.after(0, self.center_window)
 
         # Setup hotkeys
         self._setup_hotkeys()
-        
+
         # Schedule update check (after 3 seconds, in background, once per 24 hours)
         self.after(3000, self._schedule_update_check)
 
@@ -1044,22 +1054,24 @@ class HyperspecTk(tk.Tk):
         # Treeview
         cols = ("id", "label", "view", "x", "y", "source")
         self.tree = ttk.Treeview(self._pts_frame, columns=cols, show="headings", height=4)
-        for c, w in zip(cols, (70, 160, 60, 70, 70, 220)):
+        for c, w in zip(cols, (70, 160, 60, 70, 70, 400)):
             self.tree.heading(c, text=c.upper())
-            self.tree.column(c, width=w, anchor="w")
-        
+            self.tree.column(c, width=w, anchor="center", stretch=False)
+
         sb = ttk.Scrollbar(self._pts_frame, orient=tk.VERTICAL, command=self.tree.yview)
-        self.tree.configure(yscroll=sb.set)
-        
+        sb_x = ttk.Scrollbar(self._pts_frame, orient=tk.HORIZONTAL, command=self.tree.xview)
+        self.tree.configure(yscrollcommand=sb.set, xscrollcommand=sb_x.set)
+
         btns = ttk.Frame(self._pts_frame)
         ttk.Button(btns, text="Rename", command=self._rename_selected).pack(fill=tk.X, pady=(0, 6))
         ttk.Button(btns, text="Delete", command=self._delete_selected).pack(fill=tk.X)
-        ttk.Button(btns, text="Reset Colors", command=self._reset_colors).pack(fill=tk.X, pady=(6, 0))
+
         ttk.Button(btns, text="Toggle View", command=self._toggle_all_visibility).pack(fill=tk.X, pady=(6, 0))
-        
-        self.tree.grid(row=0, column=0, sticky="nsew", padx=(6, 0), pady=6)
-        sb.grid(row=0, column=1, sticky="ns", padx=(0, 6), pady=6)
-        btns.grid(row=0, column=2, sticky="ns", padx=6, pady=6)
+
+        self.tree.grid(row=0, column=0, sticky="nsew", padx=(6, 0), pady=(6, 0))
+        sb.grid(row=0, column=1, sticky="ns", padx=(0, 6), pady=(6, 0))
+        sb_x.grid(row=1, column=0, sticky="ew", padx=(6, 0), pady=(0, 6))
+        btns.grid(row=0, column=2, rowspan=2, sticky="ns", padx=6, pady=6)
         self._pts_frame.columnconfigure(0, weight=1)
         self._pts_frame.rowconfigure(0, weight=1)
         
@@ -2426,6 +2438,7 @@ class HyperspecTk(tk.Tk):
         
         p = self.points.pop()
         self._invalidate_point_cache(p.get("source", self.path_var.get()), int(p["x"]), int(p["y"]))
+        self._reassign_colors()
         self._redraw_spec_lines()
         self._update_gray_image()
         self._update_rgb_image()
@@ -2465,13 +2478,14 @@ class HyperspecTk(tk.Tk):
         
         if d[i] <= radius:
             p = self.points.pop(i)
-            self._redraw_spec_lines()
             self._invalidate_point_cache(p.get("source", self.path_var.get()), int(p["x"]), int(p["y"]))
+            self._reassign_colors()
+            self._redraw_spec_lines()
             self._update_gray_image()
             self._update_rgb_image()
-            
+
             self._refresh_points_view()
-            
+
             return True
         
         return False
@@ -2507,6 +2521,7 @@ class HyperspecTk(tk.Tk):
             if Path(vs).contains_point((x, y)):
                 pg = self.polygons.pop(i)
                 self._invalidate_polygon_cache(pg.get("source", self.path_var.get()), pg.get("verts", []))
+                self._reassign_colors()
                 self._redraw_spec_lines()
                 self._update_gray_image()
                 self._update_rgb_image()
@@ -2517,21 +2532,23 @@ class HyperspecTk(tk.Tk):
             vs = pg.get("verts") or []
             if len(vs) < 3:
                 continue
-            
+
             for (vx, vy) in vs:
                 if (vx - x) ** 2 + (vy - y) ** 2 <= rad * rad:
                     pg = self.polygons.pop(i)
                     self._invalidate_polygon_cache(pg.get("source", self.path_var.get()), pg.get("verts", []))
+                    self._reassign_colors()
                     self._redraw_spec_lines()
                     self._update_gray_image()
                     self._update_rgb_image()
                     return True
-            
+
             # Check if click is near edges
             for (x1, y1), (x2, y2) in zip(vs, vs[1:] + vs[:1]):
                 if _pt_seg_dist(x, y, x1, y1, x2, y2) <= rad2:
                     pg = self.polygons.pop(i)
                     self._invalidate_polygon_cache(pg.get("source", self.path_var.get()), pg.get("verts", []))
+                    self._reassign_colors()
                     self._redraw_spec_lines()
                     self._update_gray_image()
                     self._update_rgb_image()
@@ -2615,39 +2632,49 @@ class HyperspecTk(tk.Tk):
         """Refresh points list display."""
         for item in self.tree.get_children():
             self.tree.delete(item)
-        
+
+        try:
+            _font = tkfont.nametofont("TkDefaultFont")
+        except Exception:
+            _font = None
+        max_src_w = 400
+
         # Add points
         for i, p in enumerate(self.points):
             pid = f"sp{i+1:04d}"
             src = str(p.get("source", "")) if p.get("source", "") is not None else ""
-            base = os.path.basename(src) if src else "-"
-            
+            src_disp = (os.path.abspath(src) if src else "-")
             if src and not self._source_exists(src):
-                base = f"{base} [MISSING]"
-            
+                src_disp = f"{src_disp} [MISSING]"
+            if _font is not None:
+                max_src_w = max(max_src_w, _font.measure(src_disp) + 20)
+
             view_txt = "✓" if p.get("visible", True) else ""
             self.tree.insert("", "end", iid=pid,
-                             values=(pid, p["label"], view_txt, p["x"], p["y"], base))
-        
+                             values=(pid, p["label"], view_txt, p["x"], p["y"], src_disp))
+
         # Add polygons
         for j, pg in enumerate(self.polygons):
             iid = f"pg{j+1:04d}"
             vs = pg.get("verts") or []
-            
+
             if len(vs) >= 1:
                 cx = int(round(sum(v[0] for v in vs) / len(vs)))
                 cy = int(round(sum(v[1] for v in vs) / len(vs)))
             else:
                 cx, cy = "", ""
-            
+
             src = str(pg.get("source", "")) if pg.get("source", "") is not None else ""
-            base = os.path.basename(src) if src else "-"
-            
+            src_disp = (os.path.abspath(src) if src else "-")
             if src and not self._source_exists(src):
-                base = f"{base} [MISSING]"
-            
+                src_disp = f"{src_disp} [MISSING]"
+            if _font is not None:
+                max_src_w = max(max_src_w, _font.measure(src_disp) + 20)
+
             view_txt = "✓" if pg.get("visible", True) else ""
-            self.tree.insert("", "end", iid=iid, values=(iid, pg.get("label", ""), view_txt, cx, cy, base))
+            self.tree.insert("", "end", iid=iid, values=(iid, pg.get("label", ""), view_txt, cx, cy, src_disp))
+
+        self.tree.column("source", width=max_src_w)
 
         if select_last:
             if self.points:
@@ -2656,7 +2683,7 @@ class HyperspecTk(tk.Tk):
                 pid = f"pg{len(self.polygons):04d}"
             else:
                 pid = None
-            
+
             if pid:
                 self.tree.selection_set(pid)
                 self.tree.see(pid)
@@ -2859,36 +2886,21 @@ class HyperspecTk(tk.Tk):
         elif kind == "poly":
             pg = self.polygons.pop(idx)
             self._invalidate_polygon_cache(pg.get("source", self.path_var.get()), pg.get("verts", []))
-        
+
+        self._reassign_colors()
         self._redraw_spec_lines()
         self._update_gray_image()
         self._update_rgb_image()
         self._refresh_points_view()
 
-    def _reset_colors(self) -> None:
-        """Reset all point and polygon colors from palette start."""
-        if not self.points and not self.polygons:
-            return
-        
-        # Reassign colors from start
+    def _reassign_colors(self) -> None:
+        """Reassign all point and polygon colors sequentially from palette start."""
         for i, p in enumerate(self.points):
             p["color"] = self._palette10[i % 10]
         for j, pg in enumerate(self.polygons):
             pg["color"] = self._palette10[j % 10]
-        
-        # Reset color indices
         self._pt_color_idx = len(self.points) % 10
         self._pg_color_idx = len(self.polygons) % 10
-        
-        # Refresh display
-        self._refresh_points_view()
-        self._redraw_spec_lines()
-        self._update_gray_image()
-        self._update_rgb_image()
-        
-        # Show status
-        total = len(self.points) + len(self.polygons)
-        self._set_status(f"Colors reset for {total} items", duration_ms=1500)
 
     def _rename_selected(self) -> None:
         """Open rename dialog for selected item."""
@@ -3208,7 +3220,7 @@ class HyperspecTk(tk.Tk):
                 original_pos = self.ax_gray.get_position()
                 self.gray_fig.set_size_inches(SAVE_FIGSIZE_IMAGE)
                 self.gray_fig.tight_layout()  # Optimize internal layout
-                self.gray_fig.savefig(img_path, dpi=SAVE_DPI)
+                self.gray_fig.savefig(img_path, dpi=SAVE_DPI, bbox_inches='tight')
                 self.gray_fig.set_size_inches(original_size)
                 self.ax_gray.set_position(original_pos)
                 self.gray_canvas.draw_idle()
@@ -3219,7 +3231,7 @@ class HyperspecTk(tk.Tk):
                 original_pos = self.ax_rgb.get_position()
                 self.rgb_fig.set_size_inches(SAVE_FIGSIZE_IMAGE)
                 self.rgb_fig.tight_layout()  # Optimize internal layout
-                self.rgb_fig.savefig(img_path, dpi=SAVE_DPI)
+                self.rgb_fig.savefig(img_path, dpi=SAVE_DPI, bbox_inches='tight')
                 self.rgb_fig.set_size_inches(original_size)
                 self.ax_rgb.set_position(original_pos)
                 self.rgb_canvas.draw_idle()
@@ -3230,7 +3242,7 @@ class HyperspecTk(tk.Tk):
             original_pos = self.ax_spec.get_position()
             self.spec_fig.set_size_inches(SAVE_FIGSIZE_SPECTRA)
             self.spec_fig.tight_layout()  # Optimize internal layout
-            self.spec_fig.savefig(spec_path, dpi=SAVE_DPI)
+            self.spec_fig.savefig(spec_path, dpi=SAVE_DPI, bbox_inches='tight')
             self.spec_fig.set_size_inches(original_size)
             self.ax_spec.set_position(original_pos)
             self.spec_canvas.draw_idle()
@@ -4266,4 +4278,5 @@ class HyperspecTk(tk.Tk):
 # ENTRY POINT
 # =============================================================================
 if __name__ == "__main__":
+    enable_taskbar_icon()
     HyperspecTk().mainloop()
