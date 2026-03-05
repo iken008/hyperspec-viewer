@@ -527,6 +527,9 @@ class HyperspecTk(tk.Tk):
         self._poly_idx_cache: Dict[Tuple[str, Tuple[Tuple[int, int], ...]], np.ndarray] = {}
         self._poly_proc_cache: Dict[Tuple, Tuple[np.ndarray, np.ndarray, np.ndarray, int]] = {}
         
+        # Band line overlay on spectra plot
+        self.show_band_lines = tk.BooleanVar(value=True)
+
         # Polygon drawing state
         self.poly_mode = tk.BooleanVar(value=False)
         self._poly_drawing_axes = None
@@ -569,6 +572,10 @@ class HyperspecTk(tk.Tk):
         s.add_separator()
         s.add_command(label="Filter Parameters...", command=self._open_filter_settings)
         m.add_cascade(label="Settings", menu=s)
+        # Help menu
+        h = tk.Menu(m, tearoff=False)
+        h.add_command(label="Keyboard Shortcuts...", command=self._show_help_shortcuts)
+        m.add_cascade(label="Help", menu=h)
         self.config(menu=m)
 
     def _on_flip_change(self) -> None:
@@ -661,6 +668,89 @@ class HyperspecTk(tk.Tk):
         
         ttk.Button(btn_frm, text="Cancel", command=dlg.destroy).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frm, text="Apply", command=apply).pack(side=tk.LEFT)
+
+    def _show_help_shortcuts(self) -> None:
+        """Show keyboard shortcuts in a popup window (singleton)."""
+        if hasattr(self, "_help_win") and self._help_win and self._help_win.winfo_exists():
+            self._help_win.lift()
+            self._help_win.focus_set()
+            return
+        SHORTCUTS = [
+            ("Key",             "Action",                               "category"),
+            ("o / O",           "Open HDR",                             "file"),
+            ("l / L",           "Load Meta JSON",                       "file"),
+            ("4",               "Save Meta JSON",                       "file"),
+            ("5",               "Save PNG",                             "file"),
+            ("6",               "Export CSV",                           "file"),
+            ("7",               "Reset spectra",                        "file"),
+            None,
+            ("a / A",           "Cycle image tab (Gray / Pseudo RGB)",  "view"),
+            ("t / T",           "Cycle panel tab (Plot Range / Points List)", "view"),
+            ("w / W",           "Toggle fullscreen",                    "view"),
+            ("q / Q",           "Cancel / close dialog",                "view"),
+            None,
+            ("m / M",           "Toggle mode (Reflectance / Absorbance)", "proc"),
+            ("1",               "Toggle Median denoise",                "proc"),
+            ("2",               "Toggle Savitzky-Golay smooth",         "proc"),
+            ("3",               "Toggle SNV",                           "proc"),
+            None,
+            ("i / I",           "Toggle Polygon draw mode",             "edit"),
+            ("v / V",           "Toggle all visibility",                "edit"),
+            ("BackSpace / Del", "Delete last marker",                   "edit"),
+            None,
+            ("F2",              "Rename selected item (Points List)",   "list"),
+            ("Double-click",    "Rename selected item (Points List)",   "list"),
+            ("Click [View]",    "Toggle item visibility (Points List)", "list"),
+            None,
+            ("← / →",          "Move wavelength slider by 1 step (when slider focused)", "slider"),
+            None,
+            ("F1",             "Show this help window",                "help"),
+        ]
+
+        top = tk.Toplevel(self)
+        self._help_win = top
+        top.title("Keyboard Shortcuts")
+        top.resizable(True, True)
+
+        cols = ("key", "action")
+        tv = ttk.Treeview(top, columns=cols, show="headings", height=20)
+        tv.heading("key",    text="Key")
+        tv.heading("action", text="Action")
+        tv.column("key",    width=200, anchor="w", stretch=False)
+        tv.column("action", width=380, anchor="w", stretch=True)
+
+        sb = ttk.Scrollbar(top, orient=tk.VERTICAL, command=tv.yview)
+        tv.configure(yscrollcommand=sb.set)
+
+        CAT_LABELS = {
+            "file":   "── File ──────────────────",
+            "view":   "── View ─────────────────",
+            "proc":   "── Preprocessing ────────",
+            "edit":   "── Edit ─────────────────",
+            "list":   "── Points List ──────────",
+            "slider": "── Sliders ──────────────",
+            "help":   "── Help ─────────────────",
+        }
+        last_cat = None
+        for row in SHORTCUTS:
+            if row is None:
+                continue
+            key, action, cat = row
+            if cat != last_cat and cat in CAT_LABELS:
+                tv.insert("", tk.END, values=(CAT_LABELS[cat], ""), tags=("sep",))
+                last_cat = cat
+            tv.insert("", tk.END, values=(f"  {key}", action))
+
+        tv.tag_configure("sep", foreground="#888888")
+
+        tv.grid(row=0, column=0, sticky="nsew", padx=(8, 0), pady=8)
+        sb.grid(row=0, column=1, sticky="ns", padx=(0, 8), pady=8)
+        ttk.Button(top, text="Close", command=top.destroy).grid(
+            row=1, column=0, columnspan=2, pady=(0, 8))
+
+        top.columnconfigure(0, weight=1)
+        top.rowconfigure(0, weight=1)
+        top.transient(self)
 
     def _build_topbar(self) -> None:
         """Build top toolbar."""
@@ -897,6 +987,8 @@ class HyperspecTk(tk.Tk):
         
         ttk.Checkbutton(ctrl_bar, text="Polygon Avg", variable=self.poly_mode,
                         command=self._on_poly_mode_toggle).pack(side=tk.LEFT, padx=(0, 0))
+        ttk.Checkbutton(ctrl_bar, text="Band Lines", variable=self.show_band_lines,
+                        command=self._update_band_lines).pack(side=tk.LEFT, padx=(10, 0))
         
         # Status message label
         self.status_label = ttk.Label(ctrl_bar, textvariable=self.status_var, 
@@ -1163,6 +1255,9 @@ class HyperspecTk(tk.Tk):
         # w: Toggle fullscreen
         self.bind_all("w", lambda e: not _busy_in_entry() and self._toggle_fullscreen())
         self.bind_all("W", lambda e: not _busy_in_entry() and self._toggle_fullscreen())
+
+        # F1: Help
+        self.bind_all("<F1>", lambda e: self._show_help_shortcuts())
 
     def _toggle_bool_if_not_busy(self, var: tk.BooleanVar, callback, busy_check) -> None:
         """Toggle boolean variable if not busy."""
@@ -1486,6 +1581,46 @@ class HyperspecTk(tk.Tk):
         dif = np.abs(self.wavelengths - wl_value)
         return int(np.argmin(dif))
 
+    def _draw_band_lines(self) -> None:
+        """Draw vertical band-position lines on the spectra axes (called inside _redraw_spec_lines)."""
+        if not self.show_band_lines.get() or self.wavelengths is None:
+            return
+        ax = self.ax_spec
+        try:
+            active = self.nb.index(self.nb.select())
+        except Exception:
+            active = 0
+        if active == 0:
+            # Gray tab – single black line
+            wl = float(self.gray_scale_var.get())
+            ax.axvline(wl, color="black", lw=1.2, ls="--", alpha=0.7, zorder=5).set_gid("_band_line")
+        else:
+            # RGB tab – R/G/B coloured lines
+            for wl_var, color in ((self.r_var, "red"), (self.g_var, "green"), (self.b_var, "blue")):
+                ax.axvline(float(wl_var.get()), color=color, lw=1.2, ls="--", alpha=0.7, zorder=5).set_gid("_band_line")
+
+    def _update_band_lines(self) -> None:
+        """Lightweight refresh: remove old band lines and redraw without full spec redraw."""
+        ax = self.ax_spec
+        # Remove previous band-line artists (axvlines tagged with gid)
+        for ln in [l for l in ax.get_lines() if l.get_gid() == "_band_line"]:
+            ln.remove()
+        if self.show_band_lines.get() and self.wavelengths is not None:
+            try:
+                active = self.nb.index(self.nb.select())
+            except Exception:
+                active = 0
+            if active == 0:
+                ln = ax.axvline(float(self.gray_scale_var.get()),
+                                color="black", lw=1.2, ls="--", alpha=0.7, zorder=5)
+                ln.set_gid("_band_line")
+            else:
+                for wl_var, color in ((self.r_var, "red"), (self.g_var, "green"), (self.b_var, "blue")):
+                    ln = ax.axvline(float(wl_var.get()),
+                                    color=color, lw=1.2, ls="--", alpha=0.7, zorder=5)
+                    ln.set_gid("_band_line")
+        self.spec_canvas.draw_idle()
+
     def on_gray_scale(self, val: str) -> None:
         """Handle gray scale slider change."""
         if self.data is None or self._snapping:
@@ -1498,6 +1633,7 @@ class HyperspecTk(tk.Tk):
             self.gray_scale_var.set(float(self.wavelengths[idx]))
             self._update_gray_label()
             self._update_gray_image()
+            self._update_band_lines()
         finally:
             self._snapping = False
 
@@ -1518,6 +1654,7 @@ class HyperspecTk(tk.Tk):
             
             self._update_rgb_labels()
             self._update_rgb_image()
+            self._update_band_lines()
         finally:
             self._snapping = False
 
@@ -1533,6 +1670,7 @@ class HyperspecTk(tk.Tk):
             self._update_gray_image()
         elif tab is self.tab_rgb:
             self._update_rgb_image()
+        self._update_band_lines()
 
     # =========================================================================
     # SPECTRAL PLOT MANAGEMENT
@@ -1911,7 +2049,10 @@ class HyperspecTk(tk.Tk):
         
         # ★ Y軸範囲を適用
         self._apply_y_range()
-        
+
+        # Draw band-position lines
+        self._draw_band_lines()
+
         self.spec_canvas.draw_idle()
         
         # Clear status after redraw
@@ -2440,6 +2581,7 @@ class HyperspecTk(tk.Tk):
         self._invalidate_point_cache(p.get("source", self.path_var.get()), int(p["x"]), int(p["y"]))
         self._reassign_colors()
         self._redraw_spec_lines()
+        self._auto_adjust_y_range()
         self._update_gray_image()
         self._update_rgb_image()
         self._refresh_points_view()
@@ -2481,11 +2623,10 @@ class HyperspecTk(tk.Tk):
             self._invalidate_point_cache(p.get("source", self.path_var.get()), int(p["x"]), int(p["y"]))
             self._reassign_colors()
             self._redraw_spec_lines()
+            self._auto_adjust_y_range()
             self._update_gray_image()
             self._update_rgb_image()
-
             self._refresh_points_view()
-
             return True
         
         return False
@@ -2523,6 +2664,7 @@ class HyperspecTk(tk.Tk):
                 self._invalidate_polygon_cache(pg.get("source", self.path_var.get()), pg.get("verts", []))
                 self._reassign_colors()
                 self._redraw_spec_lines()
+                self._auto_adjust_y_range()
                 self._update_gray_image()
                 self._update_rgb_image()
                 return True
@@ -2889,6 +3031,7 @@ class HyperspecTk(tk.Tk):
 
         self._reassign_colors()
         self._redraw_spec_lines()
+        self._auto_adjust_y_range()
         self._update_gray_image()
         self._update_rgb_image()
         self._refresh_points_view()
@@ -3111,6 +3254,23 @@ class HyperspecTk(tk.Tk):
         if not path:
             return
 
+        # Build display section (gray / pseudo-color wavelengths + active tab)
+        display_section: Dict[str, Any] = {}
+        if self.wavelengths is not None:
+            display_section["gray_wavelength"] = float(self.gray_scale_var.get())
+            display_section["cmap"] = self.cmap_name.get()
+            display_section["rgb_wavelengths"] = {
+                "R": float(self.r_var.get()),
+                "G": float(self.g_var.get()),
+                "B": float(self.b_var.get()),
+            }
+        display_section["band_lines"] = bool(self.show_band_lines.get())
+        try:
+            active_tab = self.nb.index(self.nb.select())
+            display_section["active_tab"] = "rgb" if active_tab == 1 else "gray"
+        except Exception:
+            pass
+
         meta: Dict[str, Any] = {
             "version": "1.0",
             "processing": {
@@ -3123,6 +3283,7 @@ class HyperspecTk(tk.Tk):
                 "sg_window": int(self.sg_window),
                 "flip_horizontal": bool(self.flip_horizontal.get()),
             },
+            "display": display_section,
             "plot_range": {},
             "spectra": [],
             "polygons": []
@@ -3838,6 +3999,48 @@ class HyperspecTk(tk.Tk):
         
         self._pt_color_idx = len(self.points) % 10
         self._pg_color_idx = len(self.polygons) % 10
+
+        # ★ Load display settings (gray / pseudo-color wavelengths) BEFORE redraw
+        disp = meta.get("display", {})
+        if disp and self.wavelengths is not None and self.data is not None:
+            # Gray wavelength
+            if "gray_wavelength" in disp:
+                try:
+                    gw = float(disp["gray_wavelength"])
+                    idx = self._nearest_band(gw)
+                    self.gray_band = idx
+                    self.gray_scale_var.set(float(self.wavelengths[idx]))
+                    self._update_gray_label()
+                except Exception:
+                    pass
+            # Colormap
+            if "cmap" in disp:
+                self.cmap_name.set(str(disp["cmap"]))
+            # RGB (pseudo-color) wavelengths
+            rgb_wl = disp.get("rgb_wavelengths", {})
+            if rgb_wl:
+                try:
+                    for key, var in (("R", self.r_var), ("G", self.g_var), ("B", self.b_var)):
+                        if key in rgb_wl:
+                            wl_val = float(rgb_wl[key])
+                            idx = self._nearest_band(wl_val)
+                            self.rgb_bands[key] = idx
+                            var.set(float(self.wavelengths[idx]))
+                    self._update_rgb_labels()
+                except Exception:
+                    pass
+            # Band lines toggle
+            if "band_lines" in disp:
+                self.show_band_lines.set(bool(disp["band_lines"]))
+            # Active tab
+            if "active_tab" in disp:
+                try:
+                    if disp["active_tab"] == "rgb":
+                        self.nb.select(self.tab_rgb)
+                    else:
+                        self.nb.select(self.tab_gray)
+                except Exception:
+                    pass
 
         # ★ Load plot range (X-axis) BEFORE redraw
         pr = meta.get("plot_range", {})
