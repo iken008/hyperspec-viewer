@@ -38,7 +38,7 @@ python spectral_viewer.py
 To create a standalone `.exe` application using PyInstaller:
 
 ```bash
-pyinstaller .\src\spectral_viewer_v1.7.9.py --onefile --noconsole --icon=icon/original_mag_trsp.png
+pyinstaller .\src\spectral_viewer_v1.7.9.py --onefile --noconsole --icon=icon/original_mag_trsp_64x64.ico
 ```
 
 The built executable will be in the `dist/` directory.
@@ -52,25 +52,25 @@ The built executable will be in the `dist/` directory.
 
 ### Hotkeys
 
-| Key | Function |
-|-----|----------|
-| `O` | Open HDR file |
-| `L` | Load meta JSON |
-| `4` | Save meta JSON |
-| `5` | Save PNG |
-| `6` | Export CSV |
-| `7` | Reset spectra |
-| `M` | Toggle Reflectance / Absorbance mode |
-| `1` / `2` / `3` | Toggle Denoise / Smoothing / SNV |
-| `A` | Cycle image tab (Gray / Pseudo RGB) |
-| `T` | Cycle panel tab (Plot Range / Points List) |
-| `I` | Toggle polygon draw mode |
-| `V` | Toggle all visibility |
-| `W` | Toggle fullscreen |
-| `Q` | Cancel / close dialog |
-| `F1` | Open keyboard shortcut reference |
-| `BackSpace` / `Delete` | Delete last marker |
-| `F2` | Rename selected item (Points List) |
+| Key                        | Function                                   |
+| -------------------------- | ------------------------------------------ |
+| `O`                      | Open HDR file                              |
+| `L`                      | Load meta JSON                             |
+| `4`                      | Save meta JSON                             |
+| `5`                      | Save PNG                                   |
+| `6`                      | Export CSV                                 |
+| `7`                      | Reset spectra                              |
+| `M`                      | Toggle Reflectance / Absorbance mode       |
+| `1` / `2` / `3`      | Toggle Denoise / Smoothing / SNV           |
+| `A`                      | Cycle image tab (Gray / Pseudo RGB)        |
+| `T`                      | Cycle panel tab (Plot Range / Points List) |
+| `I`                      | Toggle polygon draw mode                   |
+| `V`                      | Toggle all visibility                      |
+| `W`                      | Toggle fullscreen                          |
+| `Q`                      | Cancel / close dialog                      |
+| `F1`                     | Open keyboard shortcut reference           |
+| `BackSpace` / `Delete` | Delete last marker                         |
+| `F2`                     | Rename selected item (Points List)         |
 
 ## Meta JSON
 
@@ -95,6 +95,7 @@ By loading meta JSON files from different samples sequentially, you can overlay 
 **Input**: ENVI format (`.hdr` + binary data)
 
 **Output**:
+
 - Meta JSON (project state)
 - CSV (spectral data)
 - PNG (images)

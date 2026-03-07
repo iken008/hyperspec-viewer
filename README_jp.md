@@ -38,7 +38,7 @@ python spectral_viewer.py
 PyInstaller を使って `.exe` ファイルを作成できます：
 
 ```bash
-pyinstaller .\src\spectral_viewer_v1.7.9.py --onefile --noconsole --icon=icon/original_mag_trsp.png
+pyinstaller .\src\spectral_viewer_v1.7.9.py --onefile --noconsole --icon=icon/original_mag_trsp_64x64.ico
 ```
 
 ビルドされた実行ファイルは `dist/` フォルダに生成されます。
@@ -52,25 +52,25 @@ pyinstaller .\src\spectral_viewer_v1.7.9.py --onefile --noconsole --icon=icon/or
 
 ### キーボードショートカット
 
-| キー | 機能 |
-|------|------|
-| `O` | HDR ファイルを開く |
-| `L` | メタ JSON を読み込む |
-| `4` | メタ JSON を保存 |
-| `5` | PNG を保存 |
-| `6` | CSV をエクスポート |
-| `7` | スペクトルをリセット |
-| `M` | Reflectance / Absorbance モード切替 |
-| `1` / `2` / `3` | ノイズ除去 / スムージング / SNV の ON・OFF |
-| `A` | 画像タブを切替（グレー / 疑似カラー RGB） |
-| `T` | パネルタブを切替（Plot Range / Points List） |
-| `I` | ポリゴン描画モードの ON・OFF |
-| `V` | 全アノテーションの表示・非表示切替 |
-| `W` | フルスクリーン切替 |
-| `Q` | キャンセル / ダイアログを閉じる |
-| `F1` | キーボードショートカット一覧を開く |
-| `BackSpace` / `Delete` | 最後に追加したマーカーを削除 |
-| `F2` | 選択中アイテムのラベルを編集（Points List） |
+| キー                       | 機能                                         |
+| -------------------------- | -------------------------------------------- |
+| `O`                      | HDR ファイルを開く                           |
+| `L`                      | メタ JSON を読み込む                         |
+| `4`                      | メタ JSON を保存                             |
+| `5`                      | PNG を保存                                   |
+| `6`                      | CSV をエクスポート                           |
+| `7`                      | スペクトルをリセット                         |
+| `M`                      | Reflectance / Absorbance モード切替          |
+| `1` / `2` / `3`      | ノイズ除去 / スムージング / SNV の ON・OFF   |
+| `A`                      | 画像タブを切替（グレー / 疑似カラー RGB）    |
+| `T`                      | パネルタブを切替（Plot Range / Points List） |
+| `I`                      | ポリゴン描画モードの ON・OFF                 |
+| `V`                      | 全アノテーションの表示・非表示切替           |
+| `W`                      | フルスクリーン切替                           |
+| `Q`                      | キャンセル / ダイアログを閉じる              |
+| `F1`                     | キーボードショートカット一覧を開く           |
+| `BackSpace` / `Delete` | 最後に追加したマーカーを削除                 |
+| `F2`                     | 選択中アイテムのラベルを編集（Points List）  |
 
 ## メタ JSON
 
@@ -95,6 +95,7 @@ pyinstaller .\src\spectral_viewer_v1.7.9.py --onefile --noconsole --icon=icon/or
 **入力**: ENVI 形式（`.hdr` + バイナリデータ）
 
 **出力**:
+
 - メタ JSON（プロジェクト状態）
 - CSV（スペクトルデータ）
 - PNG（画像）
