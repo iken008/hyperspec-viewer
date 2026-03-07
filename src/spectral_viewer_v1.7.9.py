@@ -1625,7 +1625,7 @@ class HyperspecTk(tk.Tk):
         """Handle gray scale slider change."""
         if self.data is None or self._snapping:
             return
-        
+
         self._snapping = True
         try:
             idx = self._nearest_band(float(val))
@@ -1641,17 +1641,17 @@ class HyperspecTk(tk.Tk):
         """Handle RGB scale slider change."""
         if self.data is None or self._snapping:
             return
-        
+
         self._snapping = True
         try:
             self.rgb_bands["R"] = self._nearest_band(float(self.r_var.get()))
             self.rgb_bands["G"] = self._nearest_band(float(self.g_var.get()))
             self.rgb_bands["B"] = self._nearest_band(float(self.b_var.get()))
-            
+
             self.r_var.set(float(self.wavelengths[self.rgb_bands["R"]]))
             self.g_var.set(float(self.wavelengths[self.rgb_bands["G"]]))
             self.b_var.set(float(self.wavelengths[self.rgb_bands["B"]]))
-            
+
             self._update_rgb_labels()
             self._update_rgb_image()
             self._update_band_lines()
@@ -1865,6 +1865,7 @@ class HyperspecTk(tk.Tk):
         self.plot_min_entry.delete(0, tk.END)
         self.plot_min_entry.insert(0, f"{self.plot_min_var.get():.1f}")
         self._update_plot_range_label()
+        self._sync_image_slider_ranges()
         if not getattr(self, "_plot_range_dragging", False):
             self._debounce("plot_redraw", self._redraw_spec_lines, delay_ms=100)
 
@@ -1873,6 +1874,7 @@ class HyperspecTk(tk.Tk):
         self.plot_max_entry.delete(0, tk.END)
         self.plot_max_entry.insert(0, f"{self.plot_max_var.get():.1f}")
         self._update_plot_range_label()
+        self._sync_image_slider_ranges()
         if not getattr(self, "_plot_range_dragging", False):
             self._debounce("plot_redraw", self._redraw_spec_lines, delay_ms=100)
 
@@ -1894,49 +1896,6 @@ class HyperspecTk(tk.Tk):
         # 最終位置で一度だけ redraw する
         self._on_plot_min_slider_change()
         self._on_plot_max_slider_change()
-
-    def _on_plot_entry_enter(self) -> None:
-        """Handle Enter key in entry fields - update sliders."""
-        if self.wavelengths is None or self.wavelengths.size == 0:
-            return
-        
-        try:
-            wl_min = float(self.wavelengths.min())
-            wl_max = float(self.wavelengths.max())
-            
-            # Get values from entry fields
-            try:
-                lo = float(self.plot_min_entry.get())
-            except (ValueError, tk.TclError):
-                lo = wl_min
-            
-            try:
-                hi = float(self.plot_max_entry.get())
-            except (ValueError, tk.TclError):
-                hi = wl_max
-            
-            # Clamp to valid range
-            lo = max(wl_min, min(wl_max, lo))
-            hi = max(wl_min, min(wl_max, hi))
-            
-            # Prevent inversion
-            if lo > hi:
-                lo, hi = hi, lo
-            
-            # Update sliders and entries
-            self.plot_min_var.set(lo)
-            self.plot_max_var.set(hi)
-            
-            self.plot_min_entry.delete(0, tk.END)
-            self.plot_min_entry.insert(0, f"{lo:.1f}")
-            
-            self.plot_max_entry.delete(0, tk.END)
-            self.plot_max_entry.insert(0, f"{hi:.1f}")
-            
-            self._update_plot_range_label()
-            self._debounce("plot_redraw", self._redraw_spec_lines, delay_ms=100)
-        except Exception:
-            pass
 
     def _update_plot_range_label(self) -> None:
         """Update plot range label."""
@@ -1966,7 +1925,34 @@ class HyperspecTk(tk.Tk):
             self.plot_max_entry.delete(0, tk.END)
             self.plot_max_entry.insert(0, f"{wl_max:.1f}")
         self._update_plot_range_label()
+        self._sync_image_slider_ranges()
         self._redraw_spec_lines()
+
+    def _sync_image_slider_ranges(self) -> None:
+        """Sync gray/RGB slider ranges to current plot x-range."""
+        if self.wavelengths is None or self.wavelengths.size == 0:
+            return
+        lo = float(self.plot_min_var.get())
+        hi = float(self.plot_max_var.get())
+        if hi < lo:
+            lo, hi = hi, lo
+        res = self._wl_resolution()
+
+        # Update gray slider range; invoke callback if value needs clamping
+        gray_val = float(self.gray_scale_var.get())
+        self.gray_scale.configure(from_=lo, to=hi, resolution=res)
+        if gray_val < lo or gray_val > hi:
+            self.on_gray_scale(str(max(lo, min(hi, gray_val))))
+
+        # Update RGB slider ranges; invoke callback if any value needs clamping
+        rgb_needs_update = any(
+            float(var.get()) < lo or float(var.get()) > hi
+            for var in (self.r_var, self.g_var, self.b_var)
+        )
+        for sc in (self.r_scale, self.g_scale, self.b_scale):
+            sc.configure(from_=lo, to=hi, resolution=res)
+        if rgb_needs_update:
+            self.on_rgb_scale()
 
     def _current_plot_slice_and_bounds(self) -> Tuple[slice, Optional[int], Optional[int]]:
         """Get current plot range as slice and bounds."""
@@ -2766,6 +2752,7 @@ class HyperspecTk(tk.Tk):
             self.plot_max_entry.insert(0, f"{hi:.1f}")
             
             self._update_plot_range_label()
+            self._sync_image_slider_ranges()
             self._debounce("plot_redraw", self._redraw_spec_lines, delay_ms=100)
         except Exception:
             pass
