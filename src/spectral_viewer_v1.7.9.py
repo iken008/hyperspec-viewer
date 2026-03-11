@@ -563,6 +563,8 @@ class HyperspecTk(tk.Tk):
         f.add_command(label="Save Images (PNG)...", command=self.on_save_figure)
         f.add_command(label="Export Spectra CSV...", command=self.on_export_csv_spectra_only)
         f.add_separator()
+        f.add_command(label="Calibrate...", command=self._open_calibrate_dialog)
+        f.add_separator()
         f.add_command(label="Exit", command=self.destroy)
         m.add_cascade(label="File", menu=f)
         # Settings menu
@@ -582,6 +584,250 @@ class HyperspecTk(tk.Tk):
         """Handle flip horizontal setting change."""
         self._update_gray_image()
         self._update_rgb_image()
+
+    def _open_calibrate_dialog(self) -> None:
+        """Open calibration dialog (File > Calibrate...)."""
+        import re as _re
+        from pathlib import Path as _Path
+
+        dlg = tk.Toplevel(self)
+        dlg.title("Hyperspectral Calibration")
+        dlg.geometry("580x380")
+        dlg.resizable(False, False)
+        dlg.transient(self)
+
+        # Center dialog
+        self.update_idletasks()
+        cx = self.winfo_x() + (self.winfo_width() - 580) // 2
+        cy = self.winfo_y() + (self.winfo_height() - 380) // 2
+        dlg.geometry(f"+{cx}+{cy}")
+
+        frm = ttk.Frame(dlg, padding=20)
+        frm.pack(fill=tk.BOTH, expand=True)
+        frm.columnconfigure(1, weight=1)
+
+        # --- デフォルトパスを現在開いているファイルから推定 ---
+        _current_hdr = self.path_var.get()
+        _default_raw = ""
+        _default_ref = ""
+        if _current_hdr and _current_hdr != "-":
+            _hdr_p = _Path(_current_hdr)
+            _raw_candidate = _hdr_p.with_suffix(".raw")
+            if _raw_candidate.exists():
+                _default_raw = str(_raw_candidate)
+            _ref_candidate = _hdr_p.parent.parent / "ref"
+            if _ref_candidate.is_dir():
+                _default_ref = str(_ref_candidate)
+
+        # --- Scan RAW file ---
+        ttk.Label(frm, text="Scan RAW file:").grid(row=0, column=0, sticky="w", pady=5)
+        raw_var = tk.StringVar(value=_default_raw)
+        ttk.Entry(frm, textvariable=raw_var, width=42).grid(row=0, column=1, sticky="ew", padx=(8, 4))
+        def _browse_raw():
+            p = filedialog.askopenfilename(
+                title="Select scan RAW file",
+                filetypes=[("RAW files", "*.raw"), ("All files", "*.*")],
+                parent=dlg,
+            )
+            if p:
+                raw_var.set(p)
+        ttk.Button(frm, text="Browse...", command=_browse_raw).grid(row=0, column=2)
+
+        # --- Ref folder ---
+        ttk.Label(frm, text="Ref folder:").grid(row=1, column=0, sticky="w", pady=5)
+        ref_var = tk.StringVar(value=_default_ref)
+        ttk.Entry(frm, textvariable=ref_var, width=42).grid(row=1, column=1, sticky="ew", padx=(8, 4))
+        def _browse_ref():
+            p = filedialog.askdirectory(
+                title="Select ref folder (containing dark.tif & white.tif)",
+                parent=dlg,
+            )
+            if p:
+                ref_var.set(p)
+        ttk.Button(frm, text="Browse...", command=_browse_ref).grid(row=1, column=2)
+
+        # --- X value ---
+        ttk.Label(frm, text="補正倍率 X:").grid(row=2, column=0, sticky="w", pady=5)
+        x_var = tk.StringVar(value="1.2")
+        x_spin = ttk.Spinbox(frm, from_=0.0001, to=99.0, increment=0.1,
+                              textvariable=x_var, width=12, format="%.4f")
+        x_spin.grid(row=2, column=1, sticky="w", padx=(8, 4))
+        ttk.Label(frm, text="白参照輝度への補正倍率", foreground="gray").grid(row=2, column=2, sticky="w")
+
+        # --- Chunk lines ---
+        ttk.Label(frm, text="Chunk lines:").grid(row=3, column=0, sticky="w", pady=5)
+        chunk_var = tk.IntVar(value=64)
+        ttk.Spinbox(frm, from_=8, to=2048, increment=8,
+                    textvariable=chunk_var, width=12).grid(row=3, column=1, sticky="w", padx=(8, 4))
+        ttk.Label(frm, text="増やすと速い・メモリ消費増", foreground="gray").grid(row=3, column=2, sticky="w")
+
+        ttk.Separator(frm, orient="horizontal").grid(
+            row=4, column=0, columnspan=3, sticky="ew", pady=(15, 8))
+
+        # --- Progress bar ---
+        progress_var = tk.DoubleVar(value=0.0)
+        prog_bar = ttk.Progressbar(frm, variable=progress_var, maximum=100)
+        prog_bar.grid(row=5, column=0, columnspan=3, sticky="ew", pady=2)
+
+        # --- Status label ---
+        status_var = tk.StringVar(value="")
+        ttk.Label(frm, textvariable=status_var, foreground="gray").grid(
+            row=6, column=0, columnspan=3, sticky="w", pady=(2, 0))
+
+        # --- Buttons ---
+        btn_frm = ttk.Frame(frm)
+        btn_frm.grid(row=7, column=0, columnspan=3, sticky="e", pady=(16, 0))
+        run_btn = ttk.Button(btn_frm, text="Run")
+        run_btn.pack(side=tk.LEFT, padx=4)
+        close_btn = ttk.Button(btn_frm, text="Close", command=dlg.destroy)
+        close_btn.pack(side=tk.LEFT)
+
+        # --- Calibration logic ---
+        def _run_calibration():
+            raw_path = _Path(raw_var.get().strip())
+            ref_path = _Path(ref_var.get().strip())
+            try:
+                x_val = float(x_var.get())
+            except ValueError:
+                messagebox.showerror("Error", "補正倍率 X に有効な数値を入力してください。", parent=dlg)
+                return
+            chunk = int(chunk_var.get())
+
+            # Validate inputs
+            if not raw_path.exists():
+                messagebox.showerror("Error", f"RAW file not found:\n{raw_path}", parent=dlg)
+                return
+            hdr_path = raw_path.with_suffix(".hdr")
+            if not hdr_path.exists():
+                messagebox.showerror("Error", f"HDR file not found:\n{hdr_path}", parent=dlg)
+                return
+            dark_path = ref_path / "dark.tif"
+            white_path = ref_path / "white.tif"
+            for p in (dark_path, white_path):
+                if not p.exists():
+                    messagebox.showerror("Error", f"File not found:\n{p}", parent=dlg)
+                    return
+
+            run_btn.config(state="disabled")
+            close_btn.config(state="disabled")
+            progress_var.set(0.0)
+
+            def _worker():
+                EPS = 1e-6
+                MIN_WD = 100.0
+                MAX_REF = 1.1
+                DTYPE_MAP = {
+                    "1": np.uint8,  "2": np.int16,   "3": np.int32,
+                    "4": np.float32, "5": np.float64,
+                    "12": np.uint16, "13": np.uint32,
+                }
+
+                def _read_hdr(hp):
+                    with open(hp, "r", encoding="utf-8", errors="replace") as f:
+                        content = f.read()
+                    content = _re.sub(r"\{[^}]*\}",
+                                      lambda m: m.group().replace("\n", " "), content)
+                    hdr = {}
+                    for line in content.splitlines():
+                        if "=" in line:
+                            k, _, v = line.partition("=")
+                            hdr[k.strip().lower()] = v.strip()
+                    return hdr
+
+                def _write_hdr(hp, hdr):
+                    with open(hp, "w", encoding="utf-8") as f:
+                        f.write("ENVI\n")
+                        for k, v in hdr.items():
+                            if k != "envi":
+                                f.write(f"{k} = {v}\n")
+
+                def _set(sv, msg):
+                    dlg.after(0, lambda: sv.set(msg))
+
+                try:
+                    _set(status_var, "ヘッダを読み込み中...")
+                    hdr = _read_hdr(str(hdr_path))
+                    n_lines  = int(hdr["lines"])
+                    n_bands  = int(hdr["bands"])
+                    n_samp   = int(hdr["samples"])
+                    offset   = int(hdr.get("header offset", "0"))
+                    dtype    = DTYPE_MAP[hdr.get("data type", "12").strip()]
+
+                    scan_mm = np.memmap(str(raw_path), dtype=dtype, mode="r",
+                                        offset=offset, shape=(n_lines, n_bands, n_samp))
+
+                    _set(status_var, "dark / white を読み込み中...")
+                    if not HAS_PIL:
+                        raise RuntimeError("Pillow (PIL) が必要です: pip install pillow")
+                    dark = np.array(Image.open(str(dark_path)), dtype=np.float32)
+                    if dark.ndim == 3:
+                        dark = dark.mean(axis=0).astype(np.float32)
+                    white = np.array(Image.open(str(white_path)), dtype=np.float32)
+                    if white.ndim == 3:
+                        white = white.mean(axis=0).astype(np.float32)
+
+                    if dark.shape != (n_bands, n_samp) or white.shape != (n_bands, n_samp):
+                        raise ValueError(
+                            f"参照画像の shape が不一致\n"
+                            f"  期待: ({n_bands}, {n_samp})\n"
+                            f"  dark : {dark.shape}\n"
+                            f"  white: {white.shape}"
+                        )
+
+                    suffix  = f"_x{x_val:.6g}"
+                    out_raw = raw_path.parent / f"scan_calibrated{suffix}.raw"
+                    out_hdr = raw_path.parent / f"scan_calibrated{suffix}.hdr"
+
+                    wd       = (white * np.float32(x_val) - dark).astype(np.float32)
+                    low_mask = wd < MIN_WD
+
+                    with open(str(out_raw), "wb") as f_out:
+                        for start in range(0, n_lines, chunk):
+                            end = min(start + chunk, n_lines)
+                            sd  = np.maximum(
+                                scan_mm[start:end].astype(np.float32) - dark, 0.0)
+                            r   = sd / (wd + EPS)
+                            r[:, low_mask] = np.nan
+                            r[r > MAX_REF]  = np.nan
+                            np.minimum(r, 1.0, out=r)
+                            r[np.isnan(r)] = 0.0
+                            (r * 65535.0).astype(np.uint16).tofile(f_out)
+
+                            pct = end / n_lines * 100
+                            dlg.after(0, lambda p=pct, e=end: (
+                                progress_var.set(p),
+                                status_var.set(
+                                    f"キャリブレーション実行中... ({e}/{n_lines} lines)"),
+                            ))
+
+                    old_desc = hdr.get("description", "{}").strip("{} ")
+                    new_hdr  = dict(hdr)
+                    new_hdr["data type"]   = "12"
+                    new_hdr["description"] = (
+                        f"{{calibrated from {raw_path.name}, x={x_val}, {old_desc}}}")
+                    _write_hdr(str(out_hdr), new_hdr)
+
+                    dlg.after(0, lambda: progress_var.set(100.0))
+                    dlg.after(0, lambda: status_var.set(f"完了: {out_raw.name}"))
+                    dlg.after(0, lambda: run_btn.config(state="normal"))
+                    dlg.after(0, lambda: close_btn.config(state="normal"))
+                    dlg.after(0, lambda: messagebox.showinfo(
+                        "キャリブレーション完了",
+                        f"補正倍率 x = {x_val}\n出力: {out_raw.name}",
+                        parent=dlg,
+                    ))
+
+                except Exception as exc:
+                    err_msg = str(exc)
+                    dlg.after(0, lambda m=err_msg: status_var.set(f"エラー: {m}"))
+                    dlg.after(0, lambda m=err_msg: messagebox.showerror(
+                        "キャリブレーション エラー", m, parent=dlg))
+                    dlg.after(0, lambda: run_btn.config(state="normal"))
+                    dlg.after(0, lambda: close_btn.config(state="normal"))
+
+            threading.Thread(target=_worker, daemon=True).start()
+
+        run_btn.config(command=_run_calibration)
 
     def _open_filter_settings(self) -> None:
         """Open filter parameters dialog."""
