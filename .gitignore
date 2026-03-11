@@ -1,5 +1,4 @@
 .git/
-.claude
 .venv/
 build/
 dist/
