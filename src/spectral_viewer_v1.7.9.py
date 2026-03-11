@@ -613,8 +613,11 @@ class HyperspecTk(tk.Tk):
         _default_ref = ""
         if _current_hdr and _current_hdr != "-":
             _hdr_p = _Path(_current_hdr)
+            _scan_raw_candidate = _hdr_p.parent / "scan.raw"
             _raw_candidate = _hdr_p.with_suffix(".raw")
-            if _raw_candidate.exists():
+            if _scan_raw_candidate.exists():
+                _default_raw = str(_scan_raw_candidate)
+            elif _raw_candidate.exists():
                 _default_raw = str(_raw_candidate)
             # RAW の親から上位へ順に ref フォルダを探す
             for _ancestor in _hdr_p.parent.parents:
