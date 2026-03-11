@@ -547,6 +547,10 @@ class HyperspecTk(tk.Tk):
         self.poly_approx_mode = False  # False=厳密, True=近似
         self.poly_downsample_threshold = 0  # 0=無効, >0でダウンサンプリング
 
+        # キャリブレーションダイアログの前回値
+        self._calib_x: float = 1.2
+        self._calib_chunk: int = 64
+
         self._plot_range_dragging = False
 
     # =========================================================================
@@ -590,21 +594,18 @@ class HyperspecTk(tk.Tk):
         import re as _re
         from pathlib import Path as _Path
 
+        W, H = 600, 420
         dlg = tk.Toplevel(self)
         dlg.title("Hyperspectral Calibration")
-        dlg.geometry("580x380")
+        dlg.geometry(f"{W}x{H}")
         dlg.resizable(False, False)
         dlg.transient(self)
 
         # Center dialog
         self.update_idletasks()
-        cx = self.winfo_x() + (self.winfo_width() - 580) // 2
-        cy = self.winfo_y() + (self.winfo_height() - 380) // 2
+        cx = self.winfo_x() + (self.winfo_width()  - W) // 2
+        cy = self.winfo_y() + (self.winfo_height() - H) // 2
         dlg.geometry(f"+{cx}+{cy}")
-
-        frm = ttk.Frame(dlg, padding=20)
-        frm.pack(fill=tk.BOTH, expand=True)
-        frm.columnconfigure(1, weight=1)
 
         # --- デフォルトパスを現在開いているファイルから推定 ---
         _current_hdr = self.path_var.get()
@@ -615,14 +616,26 @@ class HyperspecTk(tk.Tk):
             _raw_candidate = _hdr_p.with_suffix(".raw")
             if _raw_candidate.exists():
                 _default_raw = str(_raw_candidate)
-            _ref_candidate = _hdr_p.parent.parent / "ref"
-            if _ref_candidate.is_dir():
-                _default_ref = str(_ref_candidate)
+            # RAW の親から上位へ順に ref フォルダを探す
+            for _ancestor in _hdr_p.parent.parents:
+                _ref_candidate = _ancestor / "ref"
+                if _ref_candidate.is_dir():
+                    _default_ref = str(_ref_candidate)
+                    break
 
-        # --- Scan RAW file ---
-        ttk.Label(frm, text="Scan RAW file:").grid(row=0, column=0, sticky="w", pady=5)
+        outer = ttk.Frame(dlg, padding=(16, 12, 16, 12))
+        outer.pack(fill=tk.BOTH, expand=True)
+        outer.columnconfigure(0, weight=1)
+
+        # ── 入力ファイル ──────────────────────────────────────────
+        grp_in = ttk.LabelFrame(outer, text="入力ファイル", padding=(12, 8))
+        grp_in.grid(row=0, column=0, sticky="ew", pady=(0, 8))
+        grp_in.columnconfigure(1, weight=1)
+
+        ttk.Label(grp_in, text="Scan RAW:").grid(row=0, column=0, sticky="w", pady=4)
         raw_var = tk.StringVar(value=_default_raw)
-        ttk.Entry(frm, textvariable=raw_var, width=42).grid(row=0, column=1, sticky="ew", padx=(8, 4))
+        ttk.Entry(grp_in, textvariable=raw_var).grid(
+            row=0, column=1, sticky="ew", padx=(8, 6))
         def _browse_raw():
             p = filedialog.askopenfilename(
                 title="Select scan RAW file",
@@ -631,55 +644,69 @@ class HyperspecTk(tk.Tk):
             )
             if p:
                 raw_var.set(p)
-        ttk.Button(frm, text="Browse...", command=_browse_raw).grid(row=0, column=2)
+        ttk.Button(grp_in, text="Browse...", command=_browse_raw, width=9).grid(row=0, column=2)
 
-        # --- Ref folder ---
-        ttk.Label(frm, text="Ref folder:").grid(row=1, column=0, sticky="w", pady=5)
+        ttk.Label(grp_in, text="Ref フォルダ:").grid(row=1, column=0, sticky="w", pady=4)
         ref_var = tk.StringVar(value=_default_ref)
-        ttk.Entry(frm, textvariable=ref_var, width=42).grid(row=1, column=1, sticky="ew", padx=(8, 4))
+        ttk.Entry(grp_in, textvariable=ref_var).grid(
+            row=1, column=1, sticky="ew", padx=(8, 6))
         def _browse_ref():
             p = filedialog.askdirectory(
-                title="Select ref folder (containing dark.tif & white.tif)",
+                title="Ref フォルダを選択 (dark.tif / white.tif を含む)",
                 parent=dlg,
             )
             if p:
                 ref_var.set(p)
-        ttk.Button(frm, text="Browse...", command=_browse_ref).grid(row=1, column=2)
+        ttk.Button(grp_in, text="Browse...", command=_browse_ref, width=9).grid(row=1, column=2)
 
-        # --- X value ---
-        ttk.Label(frm, text="補正倍率 X:").grid(row=2, column=0, sticky="w", pady=5)
-        x_var = tk.StringVar(value="1.2")
-        x_spin = ttk.Spinbox(frm, from_=0.0001, to=99.0, increment=0.1,
-                              textvariable=x_var, width=12, format="%.4f")
-        x_spin.grid(row=2, column=1, sticky="w", padx=(8, 4))
-        ttk.Label(frm, text="白参照輝度への補正倍率", foreground="gray").grid(row=2, column=2, sticky="w")
+        ttk.Label(grp_in, text="  dark.tif / white.tif を含むフォルダ",
+                  foreground="gray").grid(row=2, column=1, sticky="w", pady=(0, 2))
 
-        # --- Chunk lines ---
-        ttk.Label(frm, text="Chunk lines:").grid(row=3, column=0, sticky="w", pady=5)
-        chunk_var = tk.IntVar(value=64)
-        ttk.Spinbox(frm, from_=8, to=2048, increment=8,
-                    textvariable=chunk_var, width=12).grid(row=3, column=1, sticky="w", padx=(8, 4))
-        ttk.Label(frm, text="増やすと速い・メモリ消費増", foreground="gray").grid(row=3, column=2, sticky="w")
+        # ── パラメータ ────────────────────────────────────────────
+        grp_p = ttk.LabelFrame(outer, text="パラメータ", padding=(12, 8))
+        grp_p.grid(row=1, column=0, sticky="ew", pady=(0, 8))
+        grp_p.columnconfigure(2, weight=1)
 
-        ttk.Separator(frm, orient="horizontal").grid(
-            row=4, column=0, columnspan=3, sticky="ew", pady=(15, 8))
+        ttk.Label(grp_p, text="補正倍率 X:").grid(row=0, column=0, sticky="w", pady=4)
+        x_var = tk.StringVar(value=str(self._calib_x))
+        ttk.Spinbox(grp_p, from_=0.0001, to=99.0, increment=0.1,
+                    textvariable=x_var, width=10, format="%.4f").grid(
+            row=0, column=1, sticky="w", padx=(8, 0))
+        ttk.Label(grp_p, text="白参照輝度への補正倍率",
+                  foreground="gray").grid(row=0, column=2, sticky="w", padx=(12, 0))
 
-        # --- Progress bar ---
+        ttk.Label(grp_p, text="Chunk lines:").grid(row=1, column=0, sticky="w", pady=4)
+        chunk_var = tk.IntVar(value=self._calib_chunk)
+        ttk.Spinbox(grp_p, from_=8, to=2048, increment=8,
+                    textvariable=chunk_var, width=10).grid(
+            row=1, column=1, sticky="w", padx=(8, 0))
+        ttk.Label(grp_p, text="増やすと速い・メモリ消費増",
+                  foreground="gray").grid(row=1, column=2, sticky="w", padx=(12, 0))
+
+        ttk.Label(grp_p,
+                  text="式: calibrated = (scan \u2212 dark) / (white \u00d7 X \u2212 dark)",
+                  foreground="#555555").grid(
+            row=2, column=0, columnspan=3, sticky="w", pady=(8, 2))
+
+        # ── 進捗 ──────────────────────────────────────────────────
+        grp_prog = ttk.Frame(outer)
+        grp_prog.grid(row=2, column=0, sticky="ew", pady=(0, 4))
+        grp_prog.columnconfigure(0, weight=1)
+
         progress_var = tk.DoubleVar(value=0.0)
-        prog_bar = ttk.Progressbar(frm, variable=progress_var, maximum=100)
-        prog_bar.grid(row=5, column=0, columnspan=3, sticky="ew", pady=2)
+        ttk.Progressbar(grp_prog, variable=progress_var, maximum=100).grid(
+            row=0, column=0, sticky="ew")
 
-        # --- Status label ---
         status_var = tk.StringVar(value="")
-        ttk.Label(frm, textvariable=status_var, foreground="gray").grid(
-            row=6, column=0, columnspan=3, sticky="w", pady=(2, 0))
+        ttk.Label(grp_prog, textvariable=status_var, foreground="gray",
+                  anchor="w").grid(row=1, column=0, sticky="ew", pady=(3, 0))
 
-        # --- Buttons ---
-        btn_frm = ttk.Frame(frm)
-        btn_frm.grid(row=7, column=0, columnspan=3, sticky="e", pady=(16, 0))
-        run_btn = ttk.Button(btn_frm, text="Run")
-        run_btn.pack(side=tk.LEFT, padx=4)
-        close_btn = ttk.Button(btn_frm, text="Close", command=dlg.destroy)
+        # ── ボタン ────────────────────────────────────────────────
+        btn_frm = ttk.Frame(outer)
+        btn_frm.grid(row=3, column=0, sticky="e", pady=(8, 0))
+        run_btn = ttk.Button(btn_frm, text="Run", width=10)
+        run_btn.pack(side=tk.LEFT, padx=(0, 6))
+        close_btn = ttk.Button(btn_frm, text="Close", width=10, command=dlg.destroy)
         close_btn.pack(side=tk.LEFT)
 
         # --- Calibration logic ---
@@ -707,6 +734,10 @@ class HyperspecTk(tk.Tk):
                 if not p.exists():
                     messagebox.showerror("Error", f"File not found:\n{p}", parent=dlg)
                     return
+
+            # 値を次回のデフォルトとして保存
+            self._calib_x = x_val
+            self._calib_chunk = chunk
 
             run_btn.config(state="disabled")
             close_btn.config(state="disabled")

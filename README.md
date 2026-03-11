@@ -13,6 +13,7 @@ A desktop application for hyperspectral imaging data visualization and analysis.
 - Band position lines overlay on spectra plot (Gray: black, RGB: R/G/B colors)
 - Save / load project metadata as JSON (wavelength positions, colormap, active tab, band lines state)
 - Export spectra to CSV
+- Brightness calibration from raw scan data (`File > Calibrate...`)
 - Keyboard shortcuts for efficient workflow
 - Help menu with keyboard shortcut reference (`F1`)
 
@@ -74,7 +75,7 @@ The built executable will be in the `dist/` directory.
 
 ## Meta JSON
 
-The project state is saved as a JSON file and includes:
+All settings and annotations visible on screen are bundled together and saved as a single JSON file. The file includes:
 
 - Spectral preprocessing settings
 - Plot range (X and Y axis)
@@ -83,6 +84,58 @@ The project state is saved as a JSON file and includes:
 - Active image tab (Gray / Pseudo RGB)
 - Band Lines toggle state
 - Point and polygon annotations (coordinates, label names, visibility)
+
+## Calibration
+
+`File > Calibrate...` converts a raw scan into a reflectance image using dark and white reference images.
+By subtracting the dark reference, **dark current noise** from the sensor is removed.
+Dividing by the white reference corrects for **non-uniform illumination** across the field of view.
+
+### Formula
+
+```
+calibrated = (scan - dark) / (white × X - dark)
+```
+
+| Symbol    | Description                                         |
+| --------- | --------------------------------------------------- |
+| `scan`  | Raw hyperspectral scan (ENVI `.raw` + `.hdr`)   |
+| `dark`  | Dark reference image (`dark.tif`)                 |
+| `white` | White reference image (`white.tif`)               |
+| `X`     | White reference correction factor (default:`1.2`) |
+
+### Expected folder structure
+
+```
+project/
+├── raw/
+│   ├── scan.raw
+│   └── scan.hdr
+└── ref/
+    ├── dark.tif
+    └── white.tif
+```
+
+### Output
+
+The calibrated file is saved alongside the input scan:
+
+```
+raw/scan_calibrated_x1.2.raw
+raw/scan_calibrated_x1.2.hdr
+```
+
+Output values are `uint16` in the range `0–65535` (reflectance `0.0–1.0`).
+Pixels where the white reference signal is too weak (`wd < 100`) or reflectance exceeds `1.1` are set to `0`.
+
+### Settings
+
+| Field       | Description                                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------------------ |
+| Scan RAW    | Path to the raw scan file (`.raw`). Defaults to the currently open file.                                   |
+| Ref folder  | Folder containing `dark.tif` and `white.tif`. Auto-detected by searching parent directories of the scan. |
+| X           | White reference correction factor. Remembered across dialog opens.                                           |
+| Chunk lines | Number of lines processed at once. Larger values are faster but use more memory.                             |
 
 ## Tips
 
