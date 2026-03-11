@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(cd \"D:\\\\Git-works\\\\iken008\\\\hyperspec-viewer\" && python -m py_compile src/spectral_viewer_v1.7.9.py && echo \"OK\")"
-    ]
-  }
-}

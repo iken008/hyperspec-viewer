@@ -113,7 +113,7 @@ _rc["axes.unicode_minus"] = False
 # CONSTANTS
 # =============================================================================
 APP_NAME: str = "Hyperspectral Viewer"
-APP_VERSION: str = "v1.7.9"
+APP_VERSION: str = "v1.8.0"
 APP_TITLE: str = f"{APP_NAME} {APP_VERSION}"
 APP_GEOMETRY: str = "1400x850"
 

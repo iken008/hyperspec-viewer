@@ -31,7 +31,7 @@ Note: tkinter is included with Python on Windows/macOS. On Linux: `sudo apt-get 
 ## Usage
 
 ```bash
-python spectral_viewer.py
+python spectral_viewer_(version).py
 ```
 
 ### Build as Standalone Executable
@@ -39,7 +39,7 @@ python spectral_viewer.py
 To create a standalone `.exe` application using PyInstaller:
 
 ```bash
-pyinstaller .\src\spectral_viewer_v1.7.9.py --onefile --noconsole --icon=icon/original_mag_trsp_64x64.ico
+pyinstaller .\src\spectral_viewer_(version).py --onefile --noconsole --icon=icon/original_mag_trsp_64x64.ico
 ```
 
 The built executable will be in the `dist/` directory.

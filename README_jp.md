@@ -31,7 +31,7 @@ pip install numpy scipy matplotlib spectral
 ## 使い方
 
 ```bash
-python spectral_viewer.py
+python spectral_viewer_(version).py
 ```
 
 ### スタンドアロン実行ファイルのビルド
@@ -39,7 +39,7 @@ python spectral_viewer.py
 PyInstaller を使って `.exe` ファイルを作成できます：
 
 ```bash
-pyinstaller .\src\spectral_viewer_v1.7.9.py --onefile --noconsole --icon=icon/original_mag_trsp_64x64.ico
+pyinstaller .\src\spectral_viewer_(version).py --onefile --noconsole --icon=icon/original_mag_trsp_64x64.ico
 ```
 
 ビルドされた実行ファイルは `dist/` フォルダに生成されます。
